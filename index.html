@@ -94,6 +94,36 @@
             font-weight: bold;
             margin-left: 5px;
         }
+        
+        .color-option-btn {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-option-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .color-option-btn.selected {
+            border-color: var(--primary-color);
+            border-width: 4px;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-color);
+        }
+        
+        .color-option-label {
+            display: block;
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: #666;
+        }
 
         /* 버튼 및 입력 폼 */
         .btn {
@@ -178,22 +208,6 @@
             max-width: 800px;
             margin: 0 auto;
             text-align: center;
-        }
-        
-        .admin-btn {
-            background-color: var(--admin-bg);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            transition: background-color 0.3s;
-        }
-        
-        .admin-btn:hover {
-            background-color: #34495e;
         }
         
         .copyright {
@@ -405,6 +419,15 @@
                 <h3 id="detail-price" style="color:var(--primary-color)">0원</h3>
             </div>
             <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+            
+            <!-- 색상 선택 -->
+            <div class="form-group">
+                <label>색상 선택</label>
+                <div id="color-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <!-- JS로 동적 생성 -->
+                </div>
+            </div>
+            
             <div class="form-group">
                 <label>사이즈 선택</label>
                 <select id="option-size">
@@ -749,8 +772,20 @@ https://example.com/detail2.jpg"></textarea>
 
     <footer>
         <div class="footer-content">
-            <button class="admin-btn" onclick="goToAdmin()">🔐 관리자 모드</button>
             <div class="copyright">© 2024 Verunco Socks Corp.</div>
+            <!-- 숨겨진 관리자 버튼 -->
+            <div style="position: fixed; bottom: 10px; right: 10px;">
+                <button onclick="goToAdmin()" style="
+                    background: transparent;
+                    border: none;
+                    font-size: 0.8rem;
+                    color: #e0e0e0;
+                    opacity: 0.15;
+                    cursor: pointer;
+                    padding: 5px;
+                    transition: opacity 0.3s;
+                " onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='0.15'">🔑</button>
+            </div>
         </div>
     </footer>
 
@@ -810,9 +845,53 @@ https://example.com/detail2.jpg"></textarea>
             
             document.getElementById('detail-price').innerHTML = priceHTML;
             
+            // 색상 옵션 렌더링
+            const colorContainer = document.getElementById('color-options');
+            colorContainer.innerHTML = '';
+            
+            if (selectedProduct.colorStocks && selectedProduct.colorStocks.length > 0) {
+                selectedProduct.colorStocks.forEach((colorStock, index) => {
+                    const colorBtn = document.createElement('div');
+                    colorBtn.style.textAlign = 'center';
+                    colorBtn.innerHTML = `
+                        <button 
+                            class="color-option-btn ${index === 0 ? 'selected' : ''}" 
+                            style="background-color: ${colorStock.code};"
+                            onclick="selectColor('${colorStock.name}', this)"
+                            data-color="${colorStock.name}">
+                        </button>
+                        <span class="color-option-label">${colorStock.name}</span>
+                    `;
+                    colorContainer.appendChild(colorBtn);
+                });
+                
+                // 첫 번째 색상을 기본 선택
+                selectedColor = selectedProduct.colorStocks[0].name;
+            } else {
+                // 색상 정보가 없으면 기본값
+                colorContainer.innerHTML = '<p style="color: #999;">색상 정보 없음</p>';
+                selectedColor = '';
+            }
+            
             document.getElementById('order-qty').value = currentQty;
             updateTotalPrice();
             switchView('product-detail-page');
+        }
+        
+        // 색상 선택 함수
+        let selectedColor = '';
+        
+        function selectColor(colorName, btnElement) {
+            selectedColor = colorName;
+            
+            // 모든 색상 버튼의 selected 클래스 제거
+            document.querySelectorAll('.color-option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 클릭한 버튼에 selected 클래스 추가
+            btnElement.classList.add('selected');
+        }
         }
 
         function changeQty(change) {
@@ -874,10 +953,11 @@ https://example.com/detail2.jpg"></textarea>
             const size = document.getElementById('option-size').value;
             const qty = currentQty;
             const displayPrice = selectedProduct.salePrice || selectedProduct.price;
+            const color = selectedColor || '색상 미선택';
             
-            // 같은 상품, 같은 옵션이 있는지 확인
+            // 같은 상품, 같은 색상, 같은 사이즈가 있는지 확인
             const existingIndex = cart.findIndex(item => 
-                item.id === selectedProduct.id && item.option === size
+                item.id === selectedProduct.id && item.option === size && item.color === color
             );
             
             if (existingIndex >= 0) {
@@ -891,6 +971,7 @@ https://example.com/detail2.jpg"></textarea>
                     name: selectedProduct.name,
                     price: displayPrice,  // 할인가 적용
                     img: selectedProduct.img,
+                    color: color,
                     option: size,
                     qty: qty
                 });
@@ -905,6 +986,7 @@ https://example.com/detail2.jpg"></textarea>
             const size = document.getElementById('option-size').value;
             const qty = currentQty;
             const displayPrice = selectedProduct.salePrice || selectedProduct.price;
+            const color = selectedColor || '색상 미선택';
             
             // 임시 장바구니로 설정
             cart = [{
@@ -912,6 +994,7 @@ https://example.com/detail2.jpg"></textarea>
                 name: selectedProduct.name,
                 price: displayPrice,  // 할인가 적용
                 img: selectedProduct.img,
+                color: color,
                 option: size,
                 qty: qty
             }];
@@ -939,6 +1022,7 @@ https://example.com/detail2.jpg"></textarea>
                         <img src="${item.img}" class="cart-item-img" onerror="this.src='https://placehold.co/80?text=No+Image'">
                         <div class="cart-item-info">
                             <div class="cart-item-name">${item.name}</div>
+                            ${item.color ? `<div class="cart-item-option">색상: ${item.color}</div>` : ''}
                             <div class="cart-item-option">사이즈: ${item.option}</div>
                             <div class="cart-item-price">${(item.price * item.qty).toLocaleString()}원</div>
                         </div>
