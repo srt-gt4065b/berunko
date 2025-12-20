@@ -190,12 +190,137 @@
         /* 로딩/에러 메시지 스타일 */
         .status-msg { text-align: center; width: 100%; padding: 20px; color: #666; }
         .error-msg { color: #e74c3c; font-weight: bold; }
+
+        /* 장바구니 관련 스타일 */
+        .cart-floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        .cart-floating-btn:hover {
+            transform: scale(1.1);
+        }
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .cart-item-info {
+            flex: 1;
+        }
+        .cart-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .cart-item-option {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .cart-item-price {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .cart-qty-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cart-qty-btn {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .cart-qty-btn:hover {
+            background: #f5f5f5;
+        }
+        .cart-remove-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+        .cart-summary {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 20px;
+            border-top: 2px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .cart-total-amount {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-cart-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <header onclick="goHome()">
-        <h1>🧦 베룽코 양말</h1>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto;">
+            <h1 onclick="goHome()" style="margin: 0; cursor: pointer;">🧦 베룽코 양말</h1>
+            <div onclick="showCart()" style="position: relative; cursor: pointer; font-size: 1.8rem;">
+                🛒
+                <span id="cart-badge" class="cart-badge hidden">0</span>
+            </div>
+        </div>
     </header>
 
     <div class="container">
@@ -274,16 +399,17 @@
                 </div>
             </div>
             <div class="price-summary">총 결제 금액 <span id="total-price-display" class="total-price">0원</span></div>
-            <button class="btn" onclick="goToOrderForm()">구매하기</button>
+            <button class="btn" onclick="addToCart()">🛒 장바구니에 담기</button>
+            <button class="btn btn-secondary" onclick="buyNow()">바로 구매하기</button>
         </div>
 
         <!-- [화면 3] 주문서 작성 -->
         <div id="order-form-page" class="hidden order-view">
-            <button onclick="goBackToDetail()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 뒤로가기</button>
+            <button onclick="showCart()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 뒤로가기</button>
             <h2>주문서 작성</h2>
             <div class="price-summary">
-                <p><strong>상품:</strong> <span id="summary-product-name"></span></p>
-                <p><strong>옵션:</strong> <span id="summary-option"></span> / <span id="summary-qty"></span>개</p>
+                <div id="summary-product-name"></div>
+                <div id="summary-option-legacy" style="display:none;"><strong>옵션:</strong> <span id="summary-option"></span> / <span id="summary-qty"></span>개</div>
                 <hr>
                 <p style="text-align: right;">결제 금액: <span id="summary-total" style="font-weight:bold; color:var(--primary-color)"></span></p>
             </div>
@@ -297,7 +423,33 @@
             </form>
         </div>
 
-        <!-- [화면 4] 주문 완료 -->
+        <!-- [화면 4] 장바구니 -->
+        <div id="cart-page" class="hidden detail-view">
+            <button onclick="goHome()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 쇼핑 계속하기</button>
+            <h2>🛒 장바구니</h2>
+            
+            <div id="cart-items-container">
+                <!-- 장바구니 아이템들이 여기에 표시됩니다 -->
+            </div>
+
+            <!-- 빈 장바구니 메시지 -->
+            <div id="empty-cart" class="empty-cart hidden">
+                <div class="empty-cart-icon">🛒</div>
+                <p>장바구니가 비어있습니다</p>
+                <button class="btn" onclick="goHome()">쇼핑 시작하기</button>
+            </div>
+
+            <!-- 장바구니 요약 및 결제 버튼 -->
+            <div id="cart-summary-section" class="cart-summary hidden">
+                <div class="cart-total">
+                    <span>총 <span id="cart-total-items">0</span>개 상품</span>
+                    <span class="cart-total-amount" id="cart-total-price">0원</span>
+                </div>
+                <button class="btn" onclick="proceedToCheckout()">주문하기</button>
+            </div>
+        </div>
+
+        <!-- [화면 5] 주문 완료 -->
         <div id="success-page" class="hidden success-view" style="text-align: center; padding: 50px 20px;">
             <div style="font-size: 3rem;">✅</div>
             <h2>주문 성공!</h2>
@@ -327,23 +479,119 @@
                 <h3>상품 등록 및 관리</h3>
                 
                 <!-- 상품 등록/수정 폼 -->
-                <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #ddd;">
+                <div style="background:#f9f9f9; padding:20px; border-radius:8px; margin-bottom:20px; border:1px solid #ddd;">
                     <h4 style="margin-top:0;" id="product-form-title">새 상품 등록</h4>
                     <form id="add-product-form">
                         <input type="hidden" id="edit-prod-id"> <!-- 수정 모드일 때 ID 저장 -->
-                        <div class="form-group">
-                            <input type="text" id="new-prod-name" placeholder="상품명 (예: 베룽코 울트라 삭스)" required>
+                        
+                        <!-- 기본 정보 섹션 -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">📝 기본 정보</h5>
+                            
+                            <div class="form-group">
+                                <label>상품명 *</label>
+                                <input type="text" id="new-prod-name" placeholder="예: 베룽코 울트라 삭스" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>상품 카테고리</label>
+                                <select id="new-prod-category">
+                                    <option value="running">러닝용</option>
+                                    <option value="trail">트레일용</option>
+                                    <option value="recovery">리커버리용</option>
+                                    <option value="daily">일상용</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="form-group">
+                                    <label>정가 (원) *</label>
+                                    <input type="number" id="new-prod-price" placeholder="15000" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>할인가 (원)</label>
+                                    <input type="number" id="new-prod-sale-price" placeholder="할인 시에만 입력">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>재고 수량</label>
+                                <input type="number" id="new-prod-stock" placeholder="999" value="999">
+                                <small style="color:#888;">* 재고가 0이면 '품절' 표시됩니다</small>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="number" id="new-prod-price" placeholder="가격 (예: 15000)" required>
+                        
+                        <!-- 이미지 정보 섹션 -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">🖼️ 이미지 정보</h5>
+                            
+                            <div class="form-group">
+                                <label>메인 이미지 URL *</label>
+                                <input type="text" id="new-prod-img" placeholder="https://placehold.co/300x300/orange/white?text=Product" required>
+                                <small style="color:#888;">
+                                    * 무료 이미지: <a href="https://placehold.co" target="_blank">placehold.co</a>, 
+                                    <a href="https://unsplash.com" target="_blank">unsplash.com</a>
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>상세 이미지 URL (선택)</label>
+                                <textarea id="new-prod-detail-imgs" rows="3" placeholder="이미지 URL을 줄바꿈으로 구분하여 입력
+https://example.com/detail1.jpg
+https://example.com/detail2.jpg"></textarea>
+                                <small style="color:#888;">* 상세 페이지에 추가로 표시될 이미지들</small>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" id="new-prod-img" placeholder="이미지 URL (예: https://...)" required>
-                            <small style="color:#888;">* 팁: placehold.co 사이트 이미지를 쓰면 편합니다.</small>
+                        
+                        <!-- 상세 설명 섹션 -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">📋 상세 설명</h5>
+                            
+                            <div class="form-group">
+                                <label>한줄 소개</label>
+                                <input type="text" id="new-prod-summary" placeholder="예: 초경량 메시 소재로 통기성이 뛰어난 러닝 양말">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>상세 설명</label>
+                                <textarea id="new-prod-description" rows="5" placeholder="상품의 특징, 소재, 사용 용도 등을 자세히 입력하세요.
+
+예:
+- 소재: 폴리에스터 70%, 나일론 25%, 스판덱스 5%
+- 특징: 메시 구조로 통기성 우수, 아치 서포트, 발목 쿠션
+- 추천: 5km 이상 장거리 러닝, 마라톤 훈련"></textarea>
+                            </div>
                         </div>
+                        
+                        <!-- 추가 옵션 섹션 -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">⚙️ 추가 옵션</h5>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="new-prod-bestseller"> 
+                                    베스트셀러 표시
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="new-prod-new"> 
+                                    신상품 표시
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>제품 태그 (쉼표로 구분)</label>
+                                <input type="text" id="new-prod-tags" placeholder="예: 경량, 메시, 통기성, 여름용">
+                                <small style="color:#888;">* 검색 및 필터링에 사용됩니다</small>
+                            </div>
+                        </div>
+                        
                         <div style="display:flex; gap:10px;">
-                            <button type="submit" class="btn btn-small" id="btn-save-product">상품 추가하기</button>
-                            <button type="button" class="btn btn-small btn-secondary hidden" id="btn-cancel-edit" onclick="cancelEdit()">취소</button>
+                            <button type="submit" class="btn btn-small" id="btn-save-product" style="flex: 1;">✅ 상품 추가하기</button>
+                            <button type="button" class="btn btn-small btn-secondary hidden" id="btn-cancel-edit" onclick="cancelEdit()" style="flex: 1;">취소</button>
                         </div>
                     </form>
                 </div>
@@ -414,10 +662,11 @@
         let selectedProduct = null;
         let currentQty = 1;
         let allOrders = [];
+        let cart = []; // 장바구니 배열
 
         // [수정2] 핵심 UI 함수들을 즉시 전역으로 정의
         function switchView(viewId) {
-            ['main-page', 'product-detail-page', 'order-form-page', 'success-page', 'admin-page'].forEach(id => {
+            ['main-page', 'product-detail-page', 'cart-page', 'order-form-page', 'success-page', 'admin-page'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(viewId).classList.remove('hidden');
@@ -477,6 +726,183 @@
             }
         }
 
+        // ===== 장바구니 기능 =====
+        
+        // 장바구니 업데이트 (배지 및 UI)
+        function updateCartUI() {
+            const badge = document.getElementById('cart-badge');
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            
+            if (totalItems > 0) {
+                badge.textContent = totalItems;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+            
+            // localStorage에 저장
+            localStorage.setItem('berunko_cart', JSON.stringify(cart));
+        }
+
+        // 장바구니에 상품 추가
+        function addToCart() {
+            if (!selectedProduct) return;
+            
+            const size = document.getElementById('option-size').value;
+            const qty = currentQty;
+            
+            // 같은 상품, 같은 옵션이 있는지 확인
+            const existingIndex = cart.findIndex(item => 
+                item.id === selectedProduct.id && item.option === size
+            );
+            
+            if (existingIndex >= 0) {
+                // 이미 있으면 수량만 증가
+                cart[existingIndex].qty += qty;
+                alert('장바구니에 수량이 추가되었습니다!');
+            } else {
+                // 새 아이템 추가
+                cart.push({
+                    id: selectedProduct.id,
+                    name: selectedProduct.name,
+                    price: selectedProduct.price,
+                    img: selectedProduct.img,
+                    option: size,
+                    qty: qty
+                });
+                alert('장바구니에 담겼습니다!');
+            }
+            
+            updateCartUI();
+        }
+
+        // 바로 구매 (장바구니 거치지 않고 바로 주문)
+        function buyNow() {
+            const size = document.getElementById('option-size').value;
+            const qty = currentQty;
+            
+            // 임시 장바구니로 설정
+            cart = [{
+                id: selectedProduct.id,
+                name: selectedProduct.name,
+                price: selectedProduct.price,
+                img: selectedProduct.img,
+                option: size,
+                qty: qty
+            }];
+            
+            proceedToCheckout();
+        }
+
+        // 장바구니 화면 보기
+        function showCart() {
+            const container = document.getElementById('cart-items-container');
+            const emptyCart = document.getElementById('empty-cart');
+            const summarySection = document.getElementById('cart-summary-section');
+            
+            if (cart.length === 0) {
+                container.innerHTML = '';
+                emptyCart.classList.remove('hidden');
+                summarySection.classList.add('hidden');
+            } else {
+                emptyCart.classList.add('hidden');
+                summarySection.classList.remove('hidden');
+                
+                // 장바구니 아이템 렌더링
+                container.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item">
+                        <img src="${item.img}" class="cart-item-img" onerror="this.src='https://placehold.co/80?text=No+Image'">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-option">사이즈: ${item.option}</div>
+                            <div class="cart-item-price">${(item.price * item.qty).toLocaleString()}원</div>
+                        </div>
+                        <div class="cart-qty-control">
+                            <button class="cart-qty-btn" onclick="updateCartQty(${index}, -1)">-</button>
+                            <span style="min-width: 30px; text-align: center;">${item.qty}</span>
+                            <button class="cart-qty-btn" onclick="updateCartQty(${index}, 1)">+</button>
+                        </div>
+                        <button class="cart-remove-btn" onclick="removeFromCart(${index})" title="삭제">🗑️</button>
+                    </div>
+                `).join('');
+                
+                // 총 금액 계산
+                const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+                const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                
+                document.getElementById('cart-total-items').textContent = totalItems;
+                document.getElementById('cart-total-price').textContent = totalPrice.toLocaleString() + '원';
+            }
+            
+            switchView('cart-page');
+        }
+
+        // 장바구니 수량 변경
+        function updateCartQty(index, change) {
+            cart[index].qty += change;
+            
+            if (cart[index].qty <= 0) {
+                if (confirm('이 상품을 장바구니에서 제거하시겠습니까?')) {
+                    cart.splice(index, 1);
+                } else {
+                    cart[index].qty = 1;
+                }
+            }
+            
+            updateCartUI();
+            showCart(); // 화면 갱신
+        }
+
+        // 장바구니에서 상품 제거
+        function removeFromCart(index) {
+            if (confirm('이 상품을 장바구니에서 제거하시겠습니까?')) {
+                cart.splice(index, 1);
+                updateCartUI();
+                showCart(); // 화면 갱신
+            }
+        }
+
+        // 주문서로 이동
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                alert('장바구니가 비어있습니다.');
+                return;
+            }
+            
+            // 주문 요약 정보 표시
+            const summaryHtml = cart.map(item => 
+                `<p><strong>${item.name}</strong> (${item.option}) x ${item.qty}개 = ${(item.price * item.qty).toLocaleString()}원</p>`
+            ).join('');
+            
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            document.getElementById('summary-product-name').innerHTML = summaryHtml;
+            document.getElementById('summary-option').innerHTML = ''; // 개별 옵션 숨김
+            document.getElementById('summary-qty').innerHTML = ''; // 개별 수량 숨김
+            document.getElementById('summary-total').textContent = totalPrice.toLocaleString() + '원';
+            
+            switchView('order-form-page');
+        }
+
+        // 페이지 로드 시 localStorage에서 장바구니 복원
+        function loadCartFromStorage() {
+            const saved = localStorage.getItem('berunko_cart');
+            if (saved) {
+                try {
+                    cart = JSON.parse(saved);
+                    updateCartUI();
+                } catch (e) {
+                    console.error('장바구니 로드 실패:', e);
+                    cart = [];
+                }
+            }
+        }
+
+        // 페이지 로드 시 장바구니 복원
+        loadCartFromStorage();
+
+        // ===== 기존 함수들 =====
+
         function switchAdminTab(tabName) {
             ['orders', 'products', 'stats'].forEach(t => {
                 document.getElementById(`tab-btn-${t}`).classList.remove('active');
@@ -492,11 +918,28 @@
 
             document.getElementById('product-form-title').innerText = "상품 수정 모드";
             document.getElementById('edit-prod-id').value = id;
-            document.getElementById('new-prod-name').value = p.name;
-            document.getElementById('new-prod-price').value = p.price;
-            document.getElementById('new-prod-img').value = p.img;
             
-            document.getElementById('btn-save-product').innerText = "수정사항 저장";
+            // 기본 정보
+            document.getElementById('new-prod-name').value = p.name || '';
+            document.getElementById('new-prod-price').value = p.price || '';
+            document.getElementById('new-prod-sale-price').value = p.salePrice || '';
+            document.getElementById('new-prod-category').value = p.category || 'running';
+            document.getElementById('new-prod-stock').value = p.stock || 999;
+            
+            // 이미지 정보
+            document.getElementById('new-prod-img').value = p.img || '';
+            document.getElementById('new-prod-detail-imgs').value = p.detailImgs ? p.detailImgs.join('\n') : '';
+            
+            // 상세 설명
+            document.getElementById('new-prod-summary').value = p.summary || '';
+            document.getElementById('new-prod-description').value = p.description || '';
+            
+            // 추가 옵션
+            document.getElementById('new-prod-bestseller').checked = p.isBestseller || false;
+            document.getElementById('new-prod-new').checked = p.isNew || false;
+            document.getElementById('new-prod-tags').value = p.tags ? p.tags.join(', ') : '';
+            
+            document.getElementById('btn-save-product').innerText = "💾 수정사항 저장";
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
             
             document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
@@ -507,7 +950,7 @@
             document.getElementById('edit-prod-id').value = "";
             document.getElementById('add-product-form').reset();
             
-            document.getElementById('btn-save-product').innerText = "상품 추가하기";
+            document.getElementById('btn-save-product').innerText = "✅ 상품 추가하기";
             document.getElementById('btn-cancel-edit').classList.add('hidden');
         }
     </script>
@@ -629,10 +1072,62 @@
 
         async function seedInitialProducts() {
             const initialData = [
-                { name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
-                { name: "베룽코 마라톤 프로", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
-                { name: "베룽코 리커버리", price: 18000, img: "https://placehold.co/300x300/green/white?text=Recovery" },
-                { name: "베룽코 트레일", price: 14000, img: "https://placehold.co/300x300/brown/white?text=Trail" }
+                { 
+                    name: "베룽코 스피드 (초경량)", 
+                    price: 12000, 
+                    salePrice: null,
+                    category: "running",
+                    stock: 999,
+                    img: "https://placehold.co/300x300/orange/white?text=Speed",
+                    detailImgs: [],
+                    summary: "초경량 메시 소재로 통기성이 뛰어난 러닝 전용 양말",
+                    description: "- 소재: 폴리에스터 65%, 나일론 30%, 스판덱스 5%\n- 무게: 25g (1켤레 기준)\n- 특징: 초경량, 메시 통기성, 아치 서포트\n- 추천: 5km~10km 속도 훈련, 레이스",
+                    isBestseller: true,
+                    isNew: false,
+                    tags: ["경량", "메시", "통기성", "속도훈련"]
+                },
+                { 
+                    name: "베룽코 마라톤 프로", 
+                    price: 15000,
+                    salePrice: null,
+                    category: "running",
+                    stock: 999,
+                    img: "https://placehold.co/300x300/navy/white?text=Marathon",
+                    detailImgs: [],
+                    summary: "장거리 마라톤을 위한 프로급 쿠셔닝 양말",
+                    description: "- 소재: 메리노울 40%, 나일론 55%, 스판덱스 5%\n- 특징: 발바닥 쿠셔닝, 발목 보호, 습기 조절\n- 추천: 하프/풀 마라톤, 장거리 러닝",
+                    isBestseller: true,
+                    isNew: false,
+                    tags: ["마라톤", "쿠셔닝", "장거리", "메리노울"]
+                },
+                { 
+                    name: "베룽코 리커버리", 
+                    price: 18000,
+                    salePrice: 14900,
+                    category: "recovery",
+                    stock: 999,
+                    img: "https://placehold.co/300x300/green/white?text=Recovery",
+                    detailImgs: [],
+                    summary: "운동 후 회복을 돕는 컴프레션 양말",
+                    description: "- 소재: 나일론 70%, 스판덱스 30%\n- 압박력: 15-20mmHg\n- 특징: 혈액순환 촉진, 피로 회복, 부종 완화\n- 추천: 운동 후 착용, 장시간 이동",
+                    isBestseller: false,
+                    isNew: true,
+                    tags: ["회복", "컴프레션", "압박", "혈액순환"]
+                },
+                { 
+                    name: "베룽코 트레일", 
+                    price: 14000,
+                    salePrice: null,
+                    category: "trail",
+                    stock: 999,
+                    img: "https://placehold.co/300x300/brown/white?text=Trail",
+                    detailImgs: [],
+                    summary: "험난한 트레일을 위한 내구성 강화 양말",
+                    description: "- 소재: 울 30%, 나일론 65%, 스판덱스 5%\n- 특징: 강화된 발끝/뒤꿈치, 방수 처리, 미끄럼 방지\n- 추천: 트레일 러닝, 등산, 아웃도어",
+                    isBestseller: false,
+                    isNew: false,
+                    tags: ["트레일", "등산", "내구성", "방수"]
+                }
             ];
             const promises = initialData.map(p => 
                 addDoc(collection(db, 'products'), {
@@ -733,20 +1228,54 @@
         document.getElementById('add-product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-prod-id').value; 
+            
+            // 기본 정보
             const name = document.getElementById('new-prod-name').value;
             const price = Number(document.getElementById('new-prod-price').value);
+            const salePrice = document.getElementById('new-prod-sale-price').value ? 
+                             Number(document.getElementById('new-prod-sale-price').value) : null;
+            const category = document.getElementById('new-prod-category').value;
+            const stock = Number(document.getElementById('new-prod-stock').value) || 999;
+            
+            // 이미지 정보
             const img = document.getElementById('new-prod-img').value;
+            const detailImgsText = document.getElementById('new-prod-detail-imgs').value;
+            const detailImgs = detailImgsText ? detailImgsText.split('\n').filter(url => url.trim()) : [];
+            
+            // 상세 설명
+            const summary = document.getElementById('new-prod-summary').value;
+            const description = document.getElementById('new-prod-description').value;
+            
+            // 추가 옵션
+            const isBestseller = document.getElementById('new-prod-bestseller').checked;
+            const isNew = document.getElementById('new-prod-new').checked;
+            const tagsText = document.getElementById('new-prod-tags').value;
+            const tags = tagsText ? tagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+            
+            const productData = {
+                name,
+                price,
+                salePrice,
+                category,
+                stock,
+                img,
+                detailImgs,
+                summary,
+                description,
+                isBestseller,
+                isNew,
+                tags
+            };
 
             try {
                 if (id) {
-                    await updateDoc(doc(db, 'products', id), {
-                        name, price, img
-                    });
+                    await updateDoc(doc(db, 'products', id), productData);
                     alert("상품이 수정되었습니다!");
                     cancelEdit(); 
                 } else {
                     await addDoc(collection(db, 'products'), {
-                        name, price, img, createdAt: serverTimestamp()
+                        ...productData, 
+                        createdAt: serverTimestamp()
                     });
                     alert("새 상품이 등록되었습니다!");
                     e.target.reset();
@@ -772,29 +1301,53 @@
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return alert("초기화 중...");
+            if (cart.length === 0) return alert("장바구니가 비어있습니다.");
+            
             const btn = document.getElementById('btn-order-submit');
             btn.disabled = true; btn.innerText = "처리 중...";
 
-            const orderData = {
-                productName: selectedProduct.name,
-                option: document.getElementById('option-size').value,
-                qty: currentQty,
-                totalPrice: selectedProduct.price * currentQty,
-                userName: document.getElementById('user-name').value,
-                userPhone: document.getElementById('user-phone').value,
-                userAddress: document.getElementById('user-address').value,
-                depositName: document.getElementById('deposit-name').value,
-                orderDate: serverTimestamp(),
-                status: "입금대기"
-            };
+            const userName = document.getElementById('user-name').value;
+            const userPhone = document.getElementById('user-phone').value;
+            const userAddress = document.getElementById('user-address').value;
+            const depositName = document.getElementById('deposit-name').value;
 
             try {
-                await addDoc(collection(db, 'orders'), orderData);
-                document.getElementById('final-price').innerText = orderData.totalPrice.toLocaleString();
+                // 장바구니의 각 상품을 개별 주문으로 등록
+                const orderPromises = cart.map(item => {
+                    const orderData = {
+                        productName: item.name,
+                        option: item.option,
+                        qty: item.qty,
+                        totalPrice: item.price * item.qty,
+                        userName: userName,
+                        userPhone: userPhone,
+                        userAddress: userAddress,
+                        depositName: depositName,
+                        orderDate: serverTimestamp(),
+                        status: "입금대기"
+                    };
+                    return addDoc(collection(db, 'orders'), orderData);
+                });
+
+                await Promise.all(orderPromises);
+                
+                // 총 결제 금액 계산
+                const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                document.getElementById('final-price').innerText = totalAmount.toLocaleString();
+                
+                // 장바구니 비우기
+                cart = [];
+                updateCartUI();
+                
                 switchView('success-page');
                 e.target.reset();
-            } catch(err) { alert("주문 실패: " + err.message); }
-            finally { btn.disabled = false; btn.innerText = "주문 완료하기"; }
+            } catch(err) { 
+                alert("주문 실패: " + err.message); 
+            }
+            finally { 
+                btn.disabled = false; 
+                btn.innerText = "주문 완료하기"; 
+            }
         });
 
         // [기능 7] 주문 배송 처리
