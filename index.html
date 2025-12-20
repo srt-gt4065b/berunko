@@ -10,7 +10,8 @@
             --primary-color: #ff6b00;
             --text-color: #333;
             --bg-color: #f5f5f5;
-            --admin-bg: #2c3e50; /* 관리자용 배경색 */
+            --admin-bg: #2c3e50; /* 관리자 테마색 */
+            --admin-accent: #3498db;
         }
 
         body {
@@ -21,7 +22,7 @@
             color: var(--text-color);
         }
 
-        /* 상단 헤더 */
+        /* 공통 헤더 */
         header {
             background-color: white;
             padding: 20px;
@@ -43,14 +44,12 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            padding-bottom: 80px; /* 하단 푸터 공간 확보 */
+            padding-bottom: 80px;
         }
 
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
-        /* 메인: 상품 목록 */
+        /* 쇼핑몰 메인 */
         .product-list {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -66,8 +65,8 @@
             cursor: pointer;
             text-align: center;
             padding-bottom: 15px;
+            position: relative; /* 삭제 버튼 위치용 */
         }
-
         .product-card:hover { transform: translateY(-5px); }
 
         .product-img {
@@ -80,7 +79,7 @@
         .product-name { font-weight: bold; margin: 10px 0 5px; }
         .product-price { color: var(--primary-color); font-weight: bold; }
 
-        /* 버튼 스타일 */
+        /* 버튼 및 입력 폼 */
         .btn {
             background-color: var(--primary-color);
             color: white;
@@ -95,67 +94,63 @@
         .btn:hover { opacity: 0.9; }
         .btn-secondary { background-color: #999; margin-top: 10px; }
         .btn-small { width: auto; padding: 5px 10px; font-size: 0.8rem; margin: 0; }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-edit { background-color: #f39c12; color: white; margin-right: 5px;}
 
-        /* 상세 & 주문 폼 */
-        .detail-view, .order-view, .success-view, .admin-view {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
+        /* 일반 뷰 스타일 */
+        .detail-view, .order-view, .success-view {
+            background: white; padding: 20px; border-radius: 10px;
         }
-
-        .detail-img {
-            width: 100%;
-            max-width: 300px;
-            display: block;
-            margin: 0 auto 20px;
-            border-radius: 10px;
-        }
-
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input, .form-group select {
             width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;
         }
+        .detail-img { width: 100%; max-width: 300px; display: block; margin: 0 auto 20px; border-radius: 10px; }
+        .price-summary { background-color: #fff8f0; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #ffe0b2; }
+        .bank-info { background-color: #e8f4fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #0056b3; font-weight: bold; text-align: center; }
 
-        .price-summary {
-            background-color: #fff8f0; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #ffe0b2;
+        /* --- [관리자 전용 스타일] --- */
+        .admin-view {
+            background-color: white; padding: 20px; border-radius: 10px; border: 2px solid var(--admin-bg);
         }
-        .total-price { font-size: 1.2rem; color: var(--primary-color); font-weight: bold; float: right; }
-
-        .bank-info {
-            background-color: #e8f4fd; padding: 15px; border-radius: 5px; margin-bottom: 20px;
-            color: #0056b3; font-weight: bold; text-align: center;
+        .admin-nav {
+            display: flex; gap: 10px; margin-bottom: 20px;
         }
-
-        /* 관리자 페이지 스타일 */
-        .admin-view h2 { border-bottom: 2px solid var(--admin-bg); padding-bottom: 10px; color: var(--admin-bg); }
-        .order-item {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            background-color: #fff;
+        .admin-nav button {
+            flex: 1; padding: 10px; border: none; background: #eee; cursor: pointer; border-radius: 5px;
+            font-weight: bold;
         }
-        .order-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
-            font-size: 0.9rem; color: #666;
-        }
-        .order-content { font-weight: bold; margin-bottom: 10px; }
-        .order-status {
-            display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 0.8rem;
-        }
-        .status-pending { background-color: #ffe0b2; color: #e65100; }
-        .status-completed { background-color: #c8e6c9; color: #2e7d32; }
-
-        /* 하단 푸터 (관리자 진입용) */
-        footer {
-            margin-top: 50px; text-align: center; color: #aaa; font-size: 0.8rem;
-            padding: 20px; cursor: pointer;
+        .admin-nav button.active {
+            background: var(--admin-bg); color: white;
         }
 
-        @media (max-width: 600px) {
-            .product-list { grid-template-columns: 1fr 1fr; }
+        /* 통계 대시보드 */
+        .stats-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;
         }
+        .stat-card {
+            background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #ddd;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--admin-bg); margin: 5px 0; }
+        .stat-label { font-size: 0.9rem; color: #666; }
+
+        /* 상품 관리 테이블 */
+        .admin-product-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px; border-bottom: 1px solid #eee;
+        }
+        .admin-product-info { display: flex; align-items: center; gap: 10px; }
+        .admin-product-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+
+        /* 주문 내역 스타일 */
+        .order-item { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #666; }
+        .status-badge { padding: 3px 8px; border-radius: 10px; font-size: 0.8rem; }
+        .status-pending { background: #ffe0b2; color: #e65100; }
+        .status-completed { background: #c8e6c9; color: #2e7d32; }
+
+        footer { margin-top: 50px; text-align: center; color: #aaa; font-size: 0.8rem; padding: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -166,10 +161,13 @@
 
     <div class="container">
         
-        <!-- [화면 1] 메인 페이지 -->
+        <!-- [화면 1] 메인 페이지 (상품 목록) -->
         <div id="main-page">
             <h2 style="text-align:center; margin-bottom:30px;">기록 단축을 위한 최고의 선택</h2>
-            <div id="product-list" class="product-list"></div>
+            <!-- DB에서 상품을 불러와 이곳에 표시합니다 -->
+            <div id="product-list" class="product-list">
+                <p style="text-align:center; width:100%;">상품을 불러오는 중입니다...</p>
+            </div>
         </div>
 
         <!-- [화면 2] 상세 페이지 -->
@@ -226,94 +224,350 @@
             <div style="font-size: 3rem;">✅</div>
             <h2>주문 성공!</h2>
             <p><strong><span id="final-price"></span>원</strong>을 입금해 주세요.</p>
-            <div class="bank-info">국민은행 123-456-789012 (베룽코)</div>
             <button class="btn btn-secondary" onclick="goHome()">홈으로</button>
         </div>
 
-        <!-- [화면 5] 관리자 페이지 (새로 추가됨) -->
+        <!-- [화면 5] 관리자 페이지 (확장됨) -->
         <div id="admin-page" class="hidden admin-view">
-            <h2>👮‍♂️ 관리자 주문 현황</h2>
-            <p style="font-size:0.9rem; color:#666; margin-bottom:20px;">* 실시간으로 주문이 들어오면 아래에 표시됩니다.</p>
-            <div id="admin-order-list">
-                <!-- 주문 내역이 여기에 표시됨 -->
-                <p style="text-align:center;">불러오는 중...</p>
+            <h2>👮‍♂️ 관리자 모드</h2>
+            
+            <!-- 관리자 탭 메뉴 -->
+            <div class="admin-nav">
+                <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="active">주문 관리</button>
+                <button onclick="switchAdminTab('products')" id="tab-btn-products">상품 관리</button>
+                <button onclick="switchAdminTab('stats')" id="tab-btn-stats">매출 통계</button>
             </div>
-            <button class="btn btn-secondary" onclick="goHome()">쇼핑몰로 돌아가기</button>
+
+            <!-- 탭 1: 주문 목록 -->
+            <div id="admin-tab-orders">
+                <h3>실시간 주문 현황</h3>
+                <div id="admin-order-list">로딩 중...</div>
+            </div>
+
+            <!-- 탭 2: 상품 관리 (추가/수정/삭제) -->
+            <div id="admin-tab-products" class="hidden">
+                <h3>상품 등록 및 관리</h3>
+                
+                <!-- 상품 등록/수정 폼 -->
+                <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #ddd;">
+                    <h4 style="margin-top:0;" id="product-form-title">새 상품 등록</h4>
+                    <form id="add-product-form">
+                        <input type="hidden" id="edit-prod-id"> <!-- 수정 모드일 때 ID 저장 -->
+                        <div class="form-group">
+                            <input type="text" id="new-prod-name" placeholder="상품명 (예: 베룽코 울트라 삭스)" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="new-prod-price" placeholder="가격 (예: 15000)" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="new-prod-img" placeholder="이미지 URL (예: https://...)" required>
+                            <small style="color:#888;">* 팁: placehold.co 사이트 이미지를 쓰면 편합니다.</small>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" class="btn btn-small" id="btn-save-product">상품 추가하기</button>
+                            <button type="button" class="btn btn-small btn-secondary hidden" id="btn-cancel-edit" onclick="cancelEdit()">취소</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 상품 목록 (삭제/수정용) -->
+                <h4>등록된 상품 목록</h4>
+                <div id="admin-product-list">
+                    <!-- JS로 채워짐 -->
+                </div>
+            </div>
+
+            <!-- 탭 3: 매출 통계 (주문 요약) -->
+            <div id="admin-tab-stats" class="hidden">
+                <h3>📊 전체 매출 현황</h3>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-label">총 매출액</div>
+                        <div class="stat-value" id="stat-total-revenue">0원</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">총 주문 건수</div>
+                        <div class="stat-value" id="stat-total-count">0건</div>
+                    </div>
+                </div>
+
+                <!-- 추가 통계: 배송 현황 -->
+                <h4>배송 처리 현황</h4>
+                <div class="stats-container" style="margin-bottom:20px;">
+                    <div class="stat-card" style="background-color:#fff3e0;">
+                        <div class="stat-label">배송 대기</div>
+                        <div class="stat-value" id="stat-pending-count" style="color:#e65100">0건</div>
+                    </div>
+                    <div class="stat-card" style="background-color:#e8f5e9;">
+                        <div class="stat-label">배송 완료</div>
+                        <div class="stat-value" id="stat-completed-count" style="color:#2e7d32">0건</div>
+                    </div>
+                </div>
+                
+                <h4>상품별 판매량</h4>
+                <ul id="stat-product-breakdown" style="list-style: none; padding: 0;">
+                    <!-- JS로 채워짐 -->
+                </ul>
+            </div>
+
+            <button class="btn btn-secondary" onclick="goHome()" style="margin-top:20px;">쇼핑몰로 돌아가기</button>
         </div>
 
     </div>
 
     <footer onclick="goToAdmin()">
-        © 2024 Verunco Socks Corp. (클릭 시 관리자 모드)
+        © 2024 Verunco Socks Corp. (관리자 모드: 하단 클릭)
     </footer>
 
-    <!-- Firebase SDK (ES Module 방식) -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 1. Firebase 초기화
-        
-        // [교육용 안내]
-        // 이 화면(Canvas)에서는 설정이 자동으로 주입되지만, 
-        // 여러분이 직접 홈페이지를 운영할 때는 아래 'firebaseConfig' 변수에 
-        // 파이어베이스 사이트에서 복사한 내용을 붙여넣어야 합니다.
-        
-        /* const firebaseConfig = {
-            apiKey: "AIzaSyDHC0F79_7jnC-YwV48Tiusg0NMHdtPhj4",
-  authDomain: "berunko-5c8bf.firebaseapp.com",
-  projectId: "berunko-5c8bf",
-  storageBucket: "berunko-5c8bf.firebasestorage.app",
-  messagingSenderId: "933523639470",
-  appId: "1:933523639470:web:33967d8bc13e284a80f13f"
-        }; 
-        */
-
-        // 현재 환경에서는 자동으로 설정을 가져옵니다.
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
-        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 2. 인증 및 앱 시작
         let currentUser = null;
-        
+        let products = [];
+        let selectedProduct = null;
+        let currentQty = 1;
+        let allOrders = [];
+
+        // 2. 인증 및 리스너 시작
         async function initAuth() {
-            try {
-                // 익명 로그인 (DB 쓰기를 위해 필수)
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("로그인 실패:", error);
-                alert("시스템 오류: DB 연결 실패");
-            }
+            try { await signInAnonymously(auth); } 
+            catch (e) { console.error(e); alert("DB 연결 실패"); }
         }
         
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                console.log("DB 연결 성공 (User ID):", user.uid);
-                // 관리자 페이지 리스너 등록 (로그인 후에만 가능)
-                setupAdminListener();
+                setupProductListener(); 
+                setupOrderListener();
+            }
+        });
+        initAuth();
+
+        // [기능 1] 상품 데이터 실시간 동기화 (CRUD: Read)
+        function setupProductListener() {
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'products'), orderBy('createdAt', 'desc'));
+            
+            onSnapshot(q, (snapshot) => {
+                const listContainer = document.getElementById('product-list');
+                const adminListContainer = document.getElementById('admin-product-list');
+                
+                // 시딩(초기 데이터) 로직
+                if (snapshot.empty && !products.length) {
+                    seedInitialProducts();
+                    return;
+                }
+
+                products = [];
+                listContainer.innerHTML = "";
+                adminListContainer.innerHTML = "";
+
+                snapshot.forEach(docSnap => {
+                    const p = { id: docSnap.id, ...docSnap.data() };
+                    products.push(p);
+
+                    // 1. 메인 화면: 상품 카드 생성
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.onclick = () => window.showProductDetail(p.id);
+                    card.innerHTML = `
+                        <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/300?text=No+Image'">
+                        <div style="padding:10px;">
+                            <div class="product-name">${p.name}</div>
+                            <div class="product-price">${Number(p.price).toLocaleString()}원</div>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+
+                    // 2. 관리자 화면: 리스트 생성 (수정/삭제 버튼)
+                    const adminItem = document.createElement('div');
+                    adminItem.className = 'admin-product-item';
+                    adminItem.innerHTML = `
+                        <div class="admin-product-info">
+                            <img src="${p.img}" class="admin-product-thumb">
+                            <div>
+                                <strong>${p.name}</strong><br>
+                                ${Number(p.price).toLocaleString()}원
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-small btn-edit" onclick="editProduct('${p.id}')">수정</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteProduct('${p.id}')">삭제</button>
+                        </div>
+                    `;
+                    adminListContainer.appendChild(adminItem);
+                });
+            });
+        }
+
+        async function seedInitialProducts() {
+            const initialData = [
+                { name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
+                { name: "베룽코 마라톤 프로", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
+                { name: "베룽코 리커버리", price: 18000, img: "https://placehold.co/300x300/green/white?text=Recovery" },
+                { name: "베룽코 트레일", price: 14000, img: "https://placehold.co/300x300/brown/white?text=Trail" }
+            ];
+            const promises = initialData.map(p => 
+                addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), {
+                    ...p, createdAt: serverTimestamp()
+                })
+            );
+            await Promise.all(promises);
+        }
+
+        // [기능 2] 주문 데이터 리스너 & 통계 집계
+        function setupOrderListener() {
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), orderBy('orderDate', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                const listContainer = document.getElementById('admin-order-list');
+                
+                allOrders = [];
+                let html = "";
+
+                if (snapshot.empty) html = "<p>주문 내역이 없습니다.</p>";
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    allOrders.push(data);
+
+                    const date = data.orderDate ? new Date(data.orderDate.seconds * 1000).toLocaleString() : "방금 전";
+                    const statusClass = data.status === '배송완료' ? 'status-completed' : 'status-pending';
+                    
+                    html += `
+                        <div class="order-item">
+                            <div class="order-header">
+                                <span>${date}</span>
+                                <span class="status-badge ${statusClass}">${data.status}</span>
+                            </div>
+                            <div><strong>[${data.productName}]</strong> ${data.qty}개 (${Number(data.totalPrice).toLocaleString()}원)</div>
+                            <div style="font-size:0.8rem; color:#666; margin-top:5px;">
+                                ${data.userName} / ${data.userAddress}
+                            </div>
+                            ${data.status !== '배송완료' ? 
+                                `<button class="btn btn-small" style="margin-top:5px;" onclick="updateOrderStatus('${docSnap.id}')">배송처리</button>` : ''}
+                        </div>
+                    `;
+                });
+                listContainer.innerHTML = html;
+                calculateStats();
+            });
+        }
+
+        // [기능 3] 통계 계산 (주문 요약)
+        function calculateStats() {
+            let totalRevenue = 0;
+            let productCounts = {};
+            let pendingCount = 0;
+            let completedCount = 0;
+
+            allOrders.forEach(order => {
+                totalRevenue += (order.totalPrice || 0);
+                
+                // 배송 상태 카운트
+                if (order.status === '배송완료') completedCount++;
+                else pendingCount++;
+
+                const pName = order.productName || "알수없음";
+                if (!productCounts[pName]) productCounts[pName] = 0;
+                productCounts[pName] += (order.qty || 0);
+            });
+
+            document.getElementById('stat-total-revenue').innerText = totalRevenue.toLocaleString() + "원";
+            document.getElementById('stat-total-count').innerText = allOrders.length + "건";
+            document.getElementById('stat-pending-count').innerText = pendingCount + "건";
+            document.getElementById('stat-completed-count').innerText = completedCount + "건";
+
+            const breakdownList = document.getElementById('stat-product-breakdown');
+            breakdownList.innerHTML = "";
+            for (const [name, count] of Object.entries(productCounts)) {
+                const li = document.createElement('li');
+                li.style.padding = "5px 0";
+                li.style.borderBottom = "1px solid #eee";
+                li.innerHTML = `<span>${name}</span> <span style="float:right; font-weight:bold;">${count}개</span>`;
+                breakdownList.appendChild(li);
+            }
+        }
+
+        // [기능 4] 상품 추가 및 수정 처리 (CRUD: Create & Update)
+        document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-prod-id').value; // 수정 모드인지 확인
+            const name = document.getElementById('new-prod-name').value;
+            const price = Number(document.getElementById('new-prod-price').value);
+            const img = document.getElementById('new-prod-img').value;
+
+            try {
+                if (id) {
+                    // 수정 (Update)
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), {
+                        name, price, img
+                    });
+                    alert("상품이 수정되었습니다!");
+                    window.cancelEdit(); // 폼 초기화
+                } else {
+                    // 추가 (Create)
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), {
+                        name, price, img, createdAt: serverTimestamp()
+                    });
+                    alert("새 상품이 등록되었습니다!");
+                    e.target.reset();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("처리 실패");
             }
         });
 
-        initAuth();
+        // [기능 5] 상품 수정 모드 진입
+        window.editProduct = (id) => {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
 
-        // 3. 전역 변수 및 상품 데이터
-        const products = [
-            { id: 1, name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
-            { id: 2, name: "베룽코 마라톤 프로 (쿠션)", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
-            { id: 3, name: "베룽코 리커버리 (압박)", price: 18000, img: "https://placehold.co/300x300/green/white?text=Recovery" },
-            { id: 4, name: "베룽코 트레일 러닝", price: 14000, img: "https://placehold.co/300x300/brown/white?text=Trail" }
-        ];
+            document.getElementById('product-form-title').innerText = "상품 수정 모드";
+            document.getElementById('edit-prod-id').value = id;
+            document.getElementById('new-prod-name').value = p.name;
+            document.getElementById('new-prod-price').value = p.price;
+            document.getElementById('new-prod-img').value = p.img;
+            
+            document.getElementById('btn-save-product').innerText = "수정사항 저장";
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            
+            // 폼 쪽으로 스크롤 이동
+            document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
+        };
 
-        let selectedProduct = null;
-        let currentQty = 1;
+        // [기능 6] 상품 수정 취소
+        window.cancelEdit = () => {
+            document.getElementById('product-form-title').innerText = "새 상품 등록";
+            document.getElementById('edit-prod-id').value = "";
+            document.getElementById('add-product-form').reset();
+            
+            document.getElementById('btn-save-product').innerText = "상품 추가하기";
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        };
 
-        // UI 헬퍼 함수들을 window 객체에 연결 (module scope 탈출)
+        // [기능 7] 상품 삭제 (CRUD: Delete)
+        window.deleteProduct = async (id) => {
+            if(!confirm("정말 이 상품을 삭제하시겠습니까?")) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+            } catch(err) {
+                console.error(err);
+                alert("삭제 실패");
+            }
+        };
+
+        // --- UI 헬퍼 함수들 ---
         window.switchView = (viewId) => {
             ['main-page', 'product-detail-page', 'order-form-page', 'success-page', 'admin-page'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
@@ -321,18 +575,25 @@
             document.getElementById(viewId).classList.remove('hidden');
             window.scrollTo(0, 0);
         };
-
-        window.goHome = () => {
-            selectedProduct = null;
-            window.switchView('main-page');
+        
+        window.switchAdminTab = (tabName) => {
+            ['orders', 'products', 'stats'].forEach(t => {
+                document.getElementById(`tab-btn-${t}`).classList.remove('active');
+                document.getElementById(`admin-tab-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
         };
 
+        window.goHome = () => { selectedProduct = null; window.switchView('main-page'); };
+        
         window.showProductDetail = (id) => {
             selectedProduct = products.find(p => p.id === id);
+            if(!selectedProduct) return;
             currentQty = 1;
             document.getElementById('detail-img').src = selectedProduct.img;
             document.getElementById('detail-name').innerText = selectedProduct.name;
-            document.getElementById('detail-price').innerText = selectedProduct.price.toLocaleString() + "원";
+            document.getElementById('detail-price').innerText = Number(selectedProduct.price).toLocaleString() + "원";
             document.getElementById('order-qty').value = currentQty;
             window.updateTotalPrice();
             window.switchView('product-detail-page');
@@ -354,23 +615,20 @@
             const size = document.getElementById('option-size').value;
             const total = selectedProduct.price * currentQty;
             document.getElementById('summary-product-name').innerText = selectedProduct.name;
-            document.getElementById('summary-option').innerText = "사이즈: " + size;
+            document.getElementById('summary-option').innerText = size;
             document.getElementById('summary-qty').innerText = currentQty;
             document.getElementById('summary-total').innerText = total.toLocaleString() + "원";
             window.switchView('order-form-page');
         };
 
         window.goBackToDetail = () => window.switchView('product-detail-page');
+        window.goToAdmin = () => { if(confirm("관리자 모드로 진입합니다.")) window.switchView('admin-page'); };
 
-        // [DB 연동 1] 주문 제출 (Firestore에 저장)
-        const orderForm = document.getElementById('order-form');
-        orderForm.addEventListener('submit', async (e) => {
+        document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!currentUser) { alert("시스템 초기화 중입니다. 잠시 후 다시 시도해주세요."); return; }
-
-            const submitBtn = document.getElementById('btn-order-submit');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "처리 중...";
+            if (!currentUser) return alert("초기화 중...");
+            const btn = document.getElementById('btn-order-submit');
+            btn.disabled = true; btn.innerText = "처리 중...";
 
             const orderData = {
                 productName: selectedProduct.name,
@@ -381,118 +639,23 @@
                 userPhone: document.getElementById('user-phone').value,
                 userAddress: document.getElementById('user-address').value,
                 depositName: document.getElementById('deposit-name').value,
-                orderDate: serverTimestamp(), // 서버 시간
-                status: "입금대기" // 초기 상태
+                orderDate: serverTimestamp(),
+                status: "입금대기"
             };
 
             try {
-                // RULE 1: 공용 데이터 경로 사용 (교육용이라 모두가 볼 수 있게 public 경로 사용)
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), orderData);
-                
                 document.getElementById('final-price').innerText = orderData.totalPrice.toLocaleString();
                 window.switchView('success-page');
-                orderForm.reset();
-            } catch (error) {
-                console.error("주문 저장 실패:", error);
-                alert("주문 처리에 실패했습니다.");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "주문 완료하기";
-            }
+                e.target.reset();
+            } catch(err) { alert("주문 실패"); }
+            finally { btn.disabled = false; btn.innerText = "주문 완료하기"; }
         });
 
-        // [DB 연동 2] 관리자 페이지 (Firestore에서 읽기)
-        window.goToAdmin = () => {
-            if(confirm("관리자 페이지로 이동하시겠습니까?")) {
-                window.switchView('admin-page');
-            }
-        };
-
-        function setupAdminListener() {
-            // 주문 목록 실시간 감시 (Realtime Listener)
-            const q = query(
-                collection(db, 'artifacts', appId, 'public', 'data', 'orders'),
-                orderBy('orderDate', 'desc') // 최신순 정렬
-            );
-
-            onSnapshot(q, (snapshot) => {
-                const listContainer = document.getElementById('admin-order-list');
-                
-                if (snapshot.empty) {
-                    listContainer.innerHTML = "<p style='text-align:center'>아직 주문이 없습니다.</p>";
-                    return;
-                }
-
-                let html = "";
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const date = data.orderDate ? new Date(data.orderDate.seconds * 1000).toLocaleString() : "방금 전";
-                    
-                    // 상태에 따른 클래스 지정
-                    const statusClass = data.status === '배송완료' ? 'status-completed' : 'status-pending';
-
-                    html += `
-                        <div class="order-item">
-                            <div class="order-header">
-                                <span>${date}</span>
-                                <span class="order-status ${statusClass}">${data.status}</span>
-                            </div>
-                            <div class="order-content">
-                                [${data.productName}] ${data.option} / ${data.qty}개
-                            </div>
-                            <div style="font-size:0.9rem;">
-                                👤 <strong>${data.userName}</strong> (${data.userPhone})<br>
-                                📍 ${data.userAddress}<br>
-                                💰 결제금액: ${data.totalPrice.toLocaleString()}원 (입금자: ${data.depositName})
-                            </div>
-                            <div style="margin-top:10px; text-align:right;">
-                                ${data.status !== '배송완료' ? 
-                                    `<button class="btn btn-small" onclick="updateOrderStatus('${docSnap.id}')">발송 처리하기</button>` : 
-                                    `<span style="color:green; font-size:0.8rem;">발송 처리됨</span>`
-                                }
-                            </div>
-                        </div>
-                    `;
-                });
-                listContainer.innerHTML = html;
-            }, (error) => {
-                console.error("데이터 불러오기 실패:", error);
-                document.getElementById('admin-order-list').innerText = "데이터 로딩 에러";
-            });
-        }
-
-        // [DB 연동 3] 주문 상태 업데이트 (입금대기 -> 배송완료)
         window.updateOrderStatus = async (docId) => {
-            if(!confirm("이 주문을 '배송완료' 처리하시겠습니까?")) return;
-            
-            try {
-                const orderRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', docId);
-                await updateDoc(orderRef, {
-                    status: "배송완료"
-                });
-                // onSnapshot이 자동으로 화면을 갱신하므로 리로드 불필요
-            } catch(error) {
-                console.error("업데이트 실패:", error);
-                alert("처리 실패");
-            }
-        }
-
-        // 초기 상품 렌더링
-        const listContainer = document.getElementById('product-list');
-        products.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.onclick = () => window.showProductDetail(product.id);
-            card.innerHTML = `
-                <img src="${product.img}" class="product-img" alt="${product.name}">
-                <div style="padding:10px;">
-                    <div class="product-name">${product.name}</div>
-                    <div class="product-price">${product.price.toLocaleString()}원</div>
-                </div>
-            `;
-            listContainer.appendChild(card);
-        });
-
+            if(!confirm("배송 완료 처리하시겠습니까?")) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', docId), { status: "배송완료" });
+        };
     </script>
 </body>
 </html>
