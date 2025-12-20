@@ -79,6 +79,21 @@
 
         .product-name { font-weight: bold; margin: 10px 0 5px; }
         .product-price { color: var(--primary-color); font-weight: bold; }
+        .product-original-price { 
+            text-decoration: line-through; 
+            color: #999; 
+            font-size: 0.9rem; 
+            margin-right: 5px; 
+        }
+        .product-discount-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
 
         /* 버튼 및 입력 폼 */
         .btn {
@@ -316,9 +331,17 @@
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto;">
             <h1 onclick="goHome()" style="margin: 0; cursor: pointer;">🧦 베룽코 양말</h1>
-            <div onclick="showCart()" style="position: relative; cursor: pointer; font-size: 1.8rem;">
-                🛒
-                <span id="cart-badge" class="cart-badge hidden">0</span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <!-- Firebase 연결 상태 표시 -->
+                <div id="firebase-status" style="font-size: 0.8rem; color: #999;" title="Firebase 연결 상태">
+                    <span id="status-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ffa500; margin-right: 5px;"></span>
+                    <span id="status-text">연결중...</span>
+                </div>
+                <!-- 장바구니 아이콘 -->
+                <div onclick="showCart()" style="position: relative; cursor: pointer; font-size: 1.8rem;">
+                    🛒
+                    <span id="cart-badge" class="cart-badge hidden">0</span>
+                </div>
             </div>
         </div>
     </header>
@@ -334,7 +357,7 @@
                      alt="메인 배너">
             </div>
 
-            <h2 style="text-align:center; margin-bottom:30px;">기록 단축을 위한 최고의 선택</h2>
+            <h2 style="text-align:center; margin-bottom:30px;" id="main-header-text">기록 단축을 위한 최고의 선택</h2>
             
             <!-- [변경됨] DB 로딩 전에도 보여질 '샘플 데이터'를 하드코딩해둠 -->
             <div id="product-list" class="product-list">
@@ -466,6 +489,7 @@
                 <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="active">주문 관리</button>
                 <button onclick="switchAdminTab('products')" id="tab-btn-products">상품 관리</button>
                 <button onclick="switchAdminTab('stats')" id="tab-btn-stats">매출 통계</button>
+                <button onclick="switchAdminTab('settings')" id="tab-btn-settings">사이트 설정</button>
             </div>
 
             <!-- 탭 1: 주문 목록 -->
@@ -503,22 +527,71 @@
                                 </select>
                             </div>
                             
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                                 <div class="form-group">
                                     <label>정가 (원) *</label>
-                                    <input type="number" id="new-prod-price" placeholder="15000" required>
+                                    <input type="number" id="new-prod-price" placeholder="15000" required onchange="calculateDiscount()">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>할인율 (%)</label>
+                                    <input type="number" id="new-prod-discount" placeholder="0" min="0" max="100" value="0" onchange="calculateSalePrice()">
                                 </div>
                                 
                                 <div class="form-group">
                                     <label>할인가 (원)</label>
-                                    <input type="number" id="new-prod-sale-price" placeholder="할인 시에만 입력">
+                                    <input type="number" id="new-prod-sale-price" placeholder="자동계산" readonly style="background: #f5f5f5;">
                                 </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label>재고 수량</label>
-                                <input type="number" id="new-prod-stock" placeholder="999" value="999">
-                                <small style="color:#888;">* 재고가 0이면 '품절' 표시됩니다</small>
+                            <div id="discount-preview" style="display: none; padding: 10px; background: #fff3e0; border-radius: 5px; margin-top: 10px; border-left: 3px solid #ff6b00;">
+                                <strong>할인 미리보기:</strong><br>
+                                <span style="text-decoration: line-through; color: #999;" id="preview-original-price">15,000원</span>
+                                <span style="margin-left: 10px; color: var(--primary-color); font-weight: bold; font-size: 1.2rem;" id="preview-sale-price">12,000원</span>
+                                <span style="margin-left: 5px; background: #e74c3c; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.9rem;" id="preview-discount-badge">20%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 색상 옵션 및 재고 관리 섹션 -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">🎨 색상별 재고 관리 (최대 5가지)</h5>
+                            
+                            <div id="color-stock-container">
+                                <!-- 색상별 재고 입력 영역 -->
+                                <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
+                                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                        <input type="text" class="color-name-input" placeholder="색상명 (예: 블랙)" style="flex: 2;" required>
+                                        <input type="color" class="color-picker-input" value="#000000" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                                        <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                                        <div>
+                                            <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                                            <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                                            <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                                            <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                                        <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-small btn-secondary" onclick="addColorStock()" style="width: auto; margin-bottom: 10px;">+ 색상 추가</button>
+                            <small style="color:#888; display: block; margin-bottom: 10px;">* 최소 1개, 최대 5개까지 추가 가능</small>
+                            
+                            <div style="padding: 15px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff6b00; margin-top: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="font-size: 1.1rem;">전체 총 재고:</strong>
+                                    <span id="grand-total-stock" style="font-size: 1.3rem; font-weight: bold; color: var(--primary-color);">200</span>개
+                                </div>
                             </div>
                         </div>
                         
@@ -634,6 +707,39 @@ https://example.com/detail2.jpg"></textarea>
                 <ul id="stat-product-breakdown" style="list-style: none; padding: 0;">
                     <!-- JS로 채워짐 -->
                 </ul>
+            </div>
+
+            <!-- 탭 4: 사이트 설정 -->
+            <div id="admin-tab-settings" class="hidden">
+                <h3>⚙️ 사이트 설정</h3>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">메인 페이지 헤더 문구</h4>
+                    <form id="site-settings-form">
+                        <div class="form-group">
+                            <label>메인 헤더 문구</label>
+                            <input type="text" id="site-header-text" placeholder="예: 기록 단축을 위한 최고의 선택" style="font-size: 1.1rem;">
+                            <small style="color:#888;">* 메인 페이지 상단에 표시되는 캐치프레이즈입니다</small>
+                        </div>
+                        
+                        <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; margin: 15px 0; border-left: 3px solid #3498db;">
+                            <strong>미리보기:</strong><br>
+                            <div style="text-align: center; margin-top: 10px; font-size: 1.2rem; font-weight: bold;" id="header-preview">
+                                기록 단축을 위한 최고의 선택
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-small" style="width: auto;">💾 설정 저장</button>
+                    </form>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px;">
+                    <h4 style="margin-top: 0;">현재 설정 정보</h4>
+                    <div style="padding: 10px; background: #fafafa; border-radius: 5px;">
+                        <p><strong>사이트명:</strong> 베룽코 양말</p>
+                        <p><strong>마지막 업데이트:</strong> <span id="last-updated">-</span></p>
+                    </div>
+                </div>
             </div>
 
             <button class="btn btn-secondary" onclick="goHome()" style="margin-top:20px;">쇼핑몰로 돌아가기</button>
@@ -901,10 +1007,130 @@ https://example.com/detail2.jpg"></textarea>
         // 페이지 로드 시 장바구니 복원
         loadCartFromStorage();
 
+        // ===== 할인가 자동 계산 함수 =====
+        
+        function calculateSalePrice() {
+            const price = parseInt(document.getElementById('new-prod-price').value) || 0;
+            const discount = parseInt(document.getElementById('new-prod-discount').value) || 0;
+            
+            if (price > 0 && discount > 0) {
+                const salePrice = Math.round(price * (100 - discount) / 100);
+                document.getElementById('new-prod-sale-price').value = salePrice;
+                
+                // 미리보기 표시
+                document.getElementById('preview-original-price').textContent = price.toLocaleString() + '원';
+                document.getElementById('preview-sale-price').textContent = salePrice.toLocaleString() + '원';
+                document.getElementById('preview-discount-badge').textContent = discount + '%';
+                document.getElementById('discount-preview').style.display = 'block';
+            } else {
+                document.getElementById('new-prod-sale-price').value = '';
+                document.getElementById('discount-preview').style.display = 'none';
+            }
+        }
+        
+        function calculateDiscount() {
+            const price = parseInt(document.getElementById('new-prod-price').value) || 0;
+            const salePrice = parseInt(document.getElementById('new-prod-sale-price').value) || 0;
+            
+            if (price > 0 && salePrice > 0 && salePrice < price) {
+                const discount = Math.round((1 - salePrice / price) * 100);
+                document.getElementById('new-prod-discount').value = discount;
+                calculateSalePrice();
+            }
+        }
+
+        // ===== 색상별 재고 관리 함수 =====
+        
+        function addColorStock() {
+            const container = document.getElementById('color-stock-container');
+            const colorItems = container.querySelectorAll('.color-stock-item');
+            
+            if (colorItems.length >= 5) {
+                alert('색상은 최대 5개까지만 추가할 수 있습니다.');
+                return;
+            }
+            
+            const newItem = document.createElement('div');
+            newItem.className = 'color-stock-item';
+            newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
+            newItem.innerHTML = `
+                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <input type="text" class="color-name-input" placeholder="색상명 (예: 화이트)" style="flex: 2;" required>
+                    <input type="color" class="color-picker-input" value="#ffffff" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                    <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                    <div>
+                        <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                        <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                        <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                        <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                    <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
+                </div>
+            `;
+            container.appendChild(newItem);
+            updateAllStocks();
+        }
+        
+        function removeColorStock(btn) {
+            const container = document.getElementById('color-stock-container');
+            const colorItems = container.querySelectorAll('.color-stock-item');
+            
+            if (colorItems.length <= 1) {
+                alert('최소 1개의 색상은 필요합니다.');
+                return;
+            }
+            
+            btn.closest('.color-stock-item').remove();
+            updateAllStocks();
+        }
+        
+        // ===== 재고 총합 계산 (색상별 + 전체) =====
+        
+        function updateAllStocks() {
+            const colorItems = document.querySelectorAll('.color-stock-item');
+            let grandTotal = 0;
+            
+            colorItems.forEach(item => {
+                const stockS = parseInt(item.querySelector('.stock-s-input').value) || 0;
+                const stockM = parseInt(item.querySelector('.stock-m-input').value) || 0;
+                const stockL = parseInt(item.querySelector('.stock-l-input').value) || 0;
+                const colorTotal = stockS + stockM + stockL;
+                
+                // 각 색상의 총 재고 업데이트
+                const colorTotalDisplay = item.querySelector('.color-total-stock');
+                if (colorTotalDisplay) {
+                    colorTotalDisplay.textContent = colorTotal;
+                }
+                
+                grandTotal += colorTotal;
+            });
+            
+            // 전체 총 재고 업데이트
+            const grandTotalDisplay = document.getElementById('grand-total-stock');
+            if (grandTotalDisplay) {
+                grandTotalDisplay.textContent = grandTotal;
+            }
+        }
+        
+        // 페이지 로드 시 초기 재고 계산
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAllStocks();
+        });
+
         // ===== 기존 함수들 =====
 
         function switchAdminTab(tabName) {
-            ['orders', 'products', 'stats'].forEach(t => {
+            ['orders', 'products', 'stats', 'settings'].forEach(t => {
                 document.getElementById(`tab-btn-${t}`).classList.remove('active');
                 document.getElementById(`admin-tab-${t}`).classList.add('hidden');
             });
@@ -922,9 +1148,56 @@ https://example.com/detail2.jpg"></textarea>
             // 기본 정보
             document.getElementById('new-prod-name').value = p.name || '';
             document.getElementById('new-prod-price').value = p.price || '';
+            document.getElementById('new-prod-discount').value = p.discount || 0;
             document.getElementById('new-prod-sale-price').value = p.salePrice || '';
             document.getElementById('new-prod-category').value = p.category || 'running';
-            document.getElementById('new-prod-stock').value = p.stock || 999;
+            
+            // 할인 미리보기 표시
+            if (p.discount > 0) {
+                calculateSalePrice();
+            }
+            
+            // 색상별 재고 로드
+            const colorContainer = document.getElementById('color-stock-container');
+            colorContainer.innerHTML = ''; // 기존 색상 옵션 모두 삭제
+            
+            if (p.colorStocks && p.colorStocks.length > 0) {
+                p.colorStocks.forEach(colorStock => {
+                    const newItem = document.createElement('div');
+                    newItem.className = 'color-stock-item';
+                    newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
+                    newItem.innerHTML = `
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                            <input type="text" class="color-name-input" placeholder="색상명" value="${colorStock.name}" style="flex: 2;" required>
+                            <input type="color" class="color-picker-input" value="${colorStock.code}" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                            <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                            <div>
+                                <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                                <input type="number" class="stock-s-input" placeholder="재고" value="${colorStock.stock.S}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                                <input type="number" class="stock-m-input" placeholder="재고" value="${colorStock.stock.M}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                                <input type="number" class="stock-l-input" placeholder="재고" value="${colorStock.stock.L}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                            <strong>이 색상 총 재고:</strong> <span class="color-total-stock">${colorStock.total}</span>개
+                        </div>
+                    `;
+                    colorContainer.appendChild(newItem);
+                });
+            } else {
+                // 기본 색상 재고 1개 추가
+                addColorStock();
+            }
+            
+            updateAllStocks();
             
             // 이미지 정보
             document.getElementById('new-prod-img').value = p.img || '';
@@ -949,6 +1222,37 @@ https://example.com/detail2.jpg"></textarea>
             document.getElementById('product-form-title').innerText = "새 상품 등록";
             document.getElementById('edit-prod-id').value = "";
             document.getElementById('add-product-form').reset();
+            
+            // 색상 재고 초기화
+            const colorContainer = document.getElementById('color-stock-container');
+            colorContainer.innerHTML = `
+                <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <input type="text" class="color-name-input" placeholder="색상명 (예: 블랙)" style="flex: 2;" required>
+                        <input type="color" class="color-picker-input" value="#000000" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                            <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                            <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                            <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                        <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
+                    </div>
+                </div>
+            `;
+            
+            updateAllStocks();
             
             document.getElementById('btn-save-product').innerText = "✅ 상품 추가하기";
             document.getElementById('btn-cancel-edit').classList.add('hidden');
@@ -979,20 +1283,56 @@ https://example.com/detail2.jpg"></textarea>
 
         // 2. 인증 및 리스너 시작
         async function initAuth() {
+            const statusText = document.getElementById('status-text');
             try { 
+                if (statusText) statusText.textContent = '인증 중...';
                 await signInAnonymously(auth); 
                 console.log("Firebase 익명 인증 성공");
             } 
             catch (e) { 
-                console.error("인증 실패:", e); 
+                console.error("인증 실패:", e);
+                if (statusText) {
+                    statusText.textContent = '인증 실패';
+                    statusText.style.color = '#e74c3c';
+                }
+                alert("Firebase 연결에 실패했습니다. 페이지를 새로고침 해주세요.");
             }
         }
         
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                console.log("Firebase 인증 완료:", user.uid);
+                
+                // 연결 상태 표시 업데이트
+                const statusDot = document.getElementById('status-dot');
+                const statusText = document.getElementById('status-text');
+                if (statusDot && statusText) {
+                    statusDot.style.background = '#4caf50';
+                    statusText.textContent = '연결됨';
+                    statusText.style.color = '#4caf50';
+                    
+                    // 3초 후 상태 표시 숨기기
+                    setTimeout(() => {
+                        const firebaseStatus = document.getElementById('firebase-status');
+                        if (firebaseStatus) {
+                            firebaseStatus.style.opacity = '0';
+                            firebaseStatus.style.transition = 'opacity 0.5s';
+                        }
+                    }, 3000);
+                }
+                
                 setupProductListener(); 
                 setupOrderListener();
+            } else {
+                // 인증 실패
+                const statusDot = document.getElementById('status-dot');
+                const statusText = document.getElementById('status-text');
+                if (statusDot && statusText) {
+                    statusDot.style.background = '#e74c3c';
+                    statusText.textContent = '연결 실패';
+                    statusText.style.color = '#e74c3c';
+                }
             }
         });
         initAuth();
@@ -1031,6 +1371,11 @@ https://example.com/detail2.jpg"></textarea>
                     adminListContainer.innerHTML = "";
 
                     products.forEach(p => {
+                        // 할인율 계산
+                        const discount = p.salePrice && p.price > p.salePrice ? 
+                                        Math.round((1 - p.salePrice / p.price) * 100) : 0;
+                        const displayPrice = p.salePrice || p.price;
+                        
                         // 1. 메인 화면 카드
                         const card = document.createElement('div');
                         card.className = 'product-card';
@@ -1039,7 +1384,11 @@ https://example.com/detail2.jpg"></textarea>
                             <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/300?text=No+Image'">
                             <div style="padding:10px;">
                                 <div class="product-name">${p.name}</div>
-                                <div class="product-price">${Number(p.price).toLocaleString()}원</div>
+                                <div>
+                                    ${discount > 0 ? `<span class="product-original-price">${Number(p.price).toLocaleString()}원</span>` : ''}
+                                    <span class="product-price">${Number(displayPrice).toLocaleString()}원</span>
+                                    ${discount > 0 ? `<span class="product-discount-badge">${discount}%</span>` : ''}
+                                </div>
                             </div>
                         `;
                         listContainer.appendChild(card);
@@ -1074,10 +1423,16 @@ https://example.com/detail2.jpg"></textarea>
             const initialData = [
                 { 
                     name: "베룽코 스피드 (초경량)", 
-                    price: 12000, 
+                    price: 12000,
+                    discount: 0,
                     salePrice: null,
                     category: "running",
-                    stock: 999,
+                    colorStocks: [
+                        { name: "블랙", code: "#000000", stock: { S: 50, M: 100, L: 50 }, total: 200 },
+                        { name: "화이트", code: "#FFFFFF", stock: { S: 40, M: 80, L: 40 }, total: 160 },
+                        { name: "네온옐로우", code: "#FFFF00", stock: { S: 30, M: 60, L: 30 }, total: 120 }
+                    ],
+                    totalStock: 480,
                     img: "https://placehold.co/300x300/orange/white?text=Speed",
                     detailImgs: [],
                     summary: "초경량 메시 소재로 통기성이 뛰어난 러닝 전용 양말",
@@ -1089,9 +1444,14 @@ https://example.com/detail2.jpg"></textarea>
                 { 
                     name: "베룽코 마라톤 프로", 
                     price: 15000,
+                    discount: 0,
                     salePrice: null,
                     category: "running",
-                    stock: 999,
+                    colorStocks: [
+                        { name: "네이비", code: "#000080", stock: { S: 40, M: 80, L: 40 }, total: 160 },
+                        { name: "그레이", code: "#808080", stock: { S: 35, M: 70, L: 35 }, total: 140 }
+                    ],
+                    totalStock: 300,
                     img: "https://placehold.co/300x300/navy/white?text=Marathon",
                     detailImgs: [],
                     summary: "장거리 마라톤을 위한 프로급 쿠셔닝 양말",
@@ -1103,9 +1463,14 @@ https://example.com/detail2.jpg"></textarea>
                 { 
                     name: "베룽코 리커버리", 
                     price: 18000,
-                    salePrice: 14900,
+                    discount: 17,
+                    salePrice: 14940,
                     category: "recovery",
-                    stock: 999,
+                    colorStocks: [
+                        { name: "민트", code: "#98FF98", stock: { S: 30, M: 60, L: 30 }, total: 120 },
+                        { name: "라벤더", code: "#E6E6FA", stock: { S: 25, M: 50, L: 25 }, total: 100 }
+                    ],
+                    totalStock: 220,
                     img: "https://placehold.co/300x300/green/white?text=Recovery",
                     detailImgs: [],
                     summary: "운동 후 회복을 돕는 컴프레션 양말",
@@ -1117,9 +1482,15 @@ https://example.com/detail2.jpg"></textarea>
                 { 
                     name: "베룽코 트레일", 
                     price: 14000,
+                    discount: 0,
                     salePrice: null,
                     category: "trail",
-                    stock: 999,
+                    colorStocks: [
+                        { name: "올리브", code: "#808000", stock: { S: 25, M: 50, L: 25 }, total: 100 },
+                        { name: "브라운", code: "#8B4513", stock: { S: 20, M: 40, L: 20 }, total: 80 },
+                        { name: "블랙", code: "#000000", stock: { S: 20, M: 40, L: 20 }, total: 80 }
+                    ],
+                    totalStock: 260,
                     img: "https://placehold.co/300x300/brown/white?text=Trail",
                     detailImgs: [],
                     summary: "험난한 트레일을 위한 내구성 강화 양말",
@@ -1232,10 +1603,42 @@ https://example.com/detail2.jpg"></textarea>
             // 기본 정보
             const name = document.getElementById('new-prod-name').value;
             const price = Number(document.getElementById('new-prod-price').value);
+            const discount = Number(document.getElementById('new-prod-discount').value) || 0;
             const salePrice = document.getElementById('new-prod-sale-price').value ? 
                              Number(document.getElementById('new-prod-sale-price').value) : null;
             const category = document.getElementById('new-prod-category').value;
-            const stock = Number(document.getElementById('new-prod-stock').value) || 999;
+            
+            // 색상별 재고 수집
+            const colorItems = document.querySelectorAll('.color-stock-item');
+            const colorStocks = [];
+            let totalStock = 0;
+            
+            colorItems.forEach(item => {
+                const colorName = item.querySelector('.color-name-input').value.trim();
+                const colorCode = item.querySelector('.color-picker-input').value;
+                const stockS = parseInt(item.querySelector('.stock-s-input').value) || 0;
+                const stockM = parseInt(item.querySelector('.stock-m-input').value) || 0;
+                const stockL = parseInt(item.querySelector('.stock-l-input').value) || 0;
+                
+                if (colorName) {
+                    colorStocks.push({
+                        name: colorName,
+                        code: colorCode,
+                        stock: {
+                            S: stockS,
+                            M: stockM,
+                            L: stockL
+                        },
+                        total: stockS + stockM + stockL
+                    });
+                    totalStock += stockS + stockM + stockL;
+                }
+            });
+            
+            if (colorStocks.length === 0) {
+                alert('최소 1개의 색상을 입력해주세요.');
+                return;
+            }
             
             // 이미지 정보
             const img = document.getElementById('new-prod-img').value;
@@ -1255,9 +1658,11 @@ https://example.com/detail2.jpg"></textarea>
             const productData = {
                 name,
                 price,
+                discount,            // 할인율
                 salePrice,
                 category,
-                stock,
+                colorStocks,         // 색상별 재고 배열
+                totalStock,          // 전체 총 재고
                 img,
                 detailImgs,
                 summary,
@@ -1279,6 +1684,24 @@ https://example.com/detail2.jpg"></textarea>
                     });
                     alert("새 상품이 등록되었습니다!");
                     e.target.reset();
+                    
+                    // 색상 재고 초기화 (첫 번째만 남기기)
+                    const container = document.getElementById('color-stock-container');
+                    const colorItems = container.querySelectorAll('.color-stock-item');
+                    for (let i = 1; i < colorItems.length; i++) {
+                        colorItems[i].remove();
+                    }
+                    
+                    // 첫 번째 색상 재고 초기화
+                    if (colorItems[0]) {
+                        colorItems[0].querySelector('.color-name-input').value = '';
+                        colorItems[0].querySelector('.color-picker-input').value = '#000000';
+                        colorItems[0].querySelector('.stock-s-input').value = 50;
+                        colorItems[0].querySelector('.stock-m-input').value = 100;
+                        colorItems[0].querySelector('.stock-l-input').value = 50;
+                    }
+                    
+                    updateAllStocks();
                 }
             } catch (err) {
                 console.error(err);
@@ -1300,11 +1723,29 @@ https://example.com/detail2.jpg"></textarea>
         // [기능 6] 주문 제출
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!currentUser) return alert("초기화 중...");
-            if (cart.length === 0) return alert("장바구니가 비어있습니다.");
+            
+            if (cart.length === 0) {
+                alert("장바구니가 비어있습니다.");
+                return;
+            }
             
             const btn = document.getElementById('btn-order-submit');
-            btn.disabled = true; btn.innerText = "처리 중...";
+            btn.disabled = true; 
+            btn.innerText = "처리 중...";
+
+            // Firebase 인증 대기 (최대 5초)
+            let waitCount = 0;
+            while (!currentUser && waitCount < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                waitCount++;
+            }
+
+            if (!currentUser) {
+                alert("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
+                btn.disabled = false;
+                btn.innerText = "주문 완료하기";
+                return;
+            }
 
             const userName = document.getElementById('user-name').value;
             const userPhone = document.getElementById('user-phone').value;
@@ -1342,6 +1783,7 @@ https://example.com/detail2.jpg"></textarea>
                 switchView('success-page');
                 e.target.reset();
             } catch(err) { 
+                console.error("주문 오류:", err);
                 alert("주문 실패: " + err.message); 
             }
             finally { 
@@ -1355,6 +1797,116 @@ https://example.com/detail2.jpg"></textarea>
             if(!confirm("배송 완료 처리하시겠습니까?")) return;
             await updateDoc(doc(db, 'orders', docId), { status: "배송완료" });
         };
+
+        // [기능 8] 사이트 설정 저장 및 로드
+        async function loadSiteSettings() {
+            try {
+                const settingsDoc = await onSnapshot(doc(db, 'settings', 'site'), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const headerText = data.headerText || '기록 단축을 위한 최고의 선택';
+                        
+                        // 메인 페이지 헤더 업데이트
+                        const mainHeader = document.getElementById('main-header-text');
+                        if (mainHeader) mainHeader.textContent = headerText;
+                        
+                        // 관리자 설정 폼 업데이트
+                        const settingsInput = document.getElementById('site-header-text');
+                        if (settingsInput) settingsInput.value = headerText;
+                        
+                        // 미리보기 업데이트
+                        const preview = document.getElementById('header-preview');
+                        if (preview) preview.textContent = headerText;
+                        
+                        // 마지막 업데이트 시간
+                        const lastUpdated = document.getElementById('last-updated');
+                        if (lastUpdated && data.updatedAt) {
+                            lastUpdated.textContent = new Date(data.updatedAt.seconds * 1000).toLocaleString();
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("설정 로드 실패:", err);
+            }
+        }
+
+        // 헤더 문구 미리보기 실시간 업데이트
+        document.addEventListener('DOMContentLoaded', function() {
+            const headerInput = document.getElementById('site-header-text');
+            const headerPreview = document.getElementById('header-preview');
+            
+            if (headerInput && headerPreview) {
+                headerInput.addEventListener('input', function() {
+                    headerPreview.textContent = this.value || '기록 단축을 위한 최고의 선택';
+                });
+            }
+        });
+
+        // 사이트 설정 저장
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingsForm = document.getElementById('site-settings-form');
+            if (settingsForm) {
+                settingsForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const headerText = document.getElementById('site-header-text').value || '기록 단축을 위한 최고의 선택';
+                    
+                    try {
+                        await setDoc(doc(db, 'settings', 'site'), {
+                            headerText: headerText,
+                            updatedAt: serverTimestamp()
+                        });
+                        
+                        // 메인 페이지 즉시 업데이트
+                        const mainHeader = document.getElementById('main-header-text');
+                        if (mainHeader) mainHeader.textContent = headerText;
+                        
+                        alert('설정이 저장되었습니다!');
+                    } catch (err) {
+                        console.error("설정 저장 실패:", err);
+                        alert('설정 저장 실패: ' + err.message);
+                    }
+                });
+            }
+        });
+
+        // 인증 완료 후 사이트 설정 로드
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                console.log("Firebase 인증 완료:", user.uid);
+                
+                // 연결 상태 표시 업데이트
+                const statusDot = document.getElementById('status-dot');
+                const statusText = document.getElementById('status-text');
+                if (statusDot && statusText) {
+                    statusDot.style.background = '#4caf50';
+                    statusText.textContent = '연결됨';
+                    statusText.style.color = '#4caf50';
+                    
+                    setTimeout(() => {
+                        const firebaseStatus = document.getElementById('firebase-status');
+                        if (firebaseStatus) {
+                            firebaseStatus.style.opacity = '0';
+                            firebaseStatus.style.transition = 'opacity 0.5s';
+                        }
+                    }, 3000);
+                }
+                
+                setupProductListener(); 
+                setupOrderListener();
+                loadSiteSettings(); // 사이트 설정 로드
+            } else {
+                const statusDot = document.getElementById('status-dot');
+                const statusText = document.getElementById('status-text');
+                if (statusDot && statusText) {
+                    statusDot.style.background = '#e74c3c';
+                    statusText.textContent = '연결 실패';
+                    statusText.style.color = '#e74c3c';
+                }
+            }
+        });
+        initAuth();
     </script>
 </body>
 </html>
