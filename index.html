@@ -821,9 +821,17 @@ https://example.com/detail2.jpg"></textarea>
         
         function showProductDetail(id) {
             console.log('showProductDetail 호출:', id, 'products:', products);
+            
+            if (!products || products.length === 0) {
+                console.error('상품 목록이 아직 로드되지 않았습니다.');
+                alert('상품 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+            
             selectedProduct = products.find(p => p.id === id);
             if(!selectedProduct) {
                 console.error('상품을 찾을 수 없습니다:', id);
+                alert('해당 상품을 찾을 수 없습니다.');
                 return;
             }
             currentQty = 1;
@@ -847,6 +855,11 @@ https://example.com/detail2.jpg"></textarea>
             
             // 색상 옵션 렌더링
             const colorContainer = document.getElementById('color-options');
+            if (!colorContainer) {
+                console.error('color-options 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            
             colorContainer.innerHTML = '';
             
             if (selectedProduct.colorStocks && selectedProduct.colorStocks.length > 0) {
@@ -869,7 +882,7 @@ https://example.com/detail2.jpg"></textarea>
                 selectedColor = selectedProduct.colorStocks[0].name;
             } else {
                 // 색상 정보가 없으면 기본값
-                colorContainer.innerHTML = '<p style="color: #999;">색상 정보 없음</p>';
+                colorContainer.innerHTML = '<p style="color: #999; font-size: 0.9rem;">색상 옵션 없음</p>';
                 selectedColor = '';
             }
             
@@ -1470,6 +1483,7 @@ https://example.com/detail2.jpg"></textarea>
                     
                     products = tempProducts;
 
+                    // 기존 샘플 데이터 삭제 (실제 데이터로 교체)
                     listContainer.innerHTML = "";
                     adminListContainer.innerHTML = "";
 
