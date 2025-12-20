@@ -792,9 +792,24 @@ https://example.com/detail2.jpg"></textarea>
                 return;
             }
             currentQty = 1;
+            
+            // 할인율 계산
+            const discount = selectedProduct.salePrice && selectedProduct.price > selectedProduct.salePrice ? 
+                            Math.round((1 - selectedProduct.salePrice / selectedProduct.price) * 100) : 0;
+            const displayPrice = selectedProduct.salePrice || selectedProduct.price;
+            
             document.getElementById('detail-img').src = selectedProduct.img;
             document.getElementById('detail-name').innerText = selectedProduct.name;
-            document.getElementById('detail-price').innerText = Number(selectedProduct.price).toLocaleString() + "원";
+            
+            // 가격 표시 (할인 정보 포함)
+            const priceHTML = discount > 0 ? 
+                `<span class="product-original-price" style="font-size: 1rem;">${Number(selectedProduct.price).toLocaleString()}원</span><br>
+                 <span class="product-price" style="font-size: 1.8rem;">${Number(displayPrice).toLocaleString()}원</span>
+                 <span class="product-discount-badge" style="font-size: 1rem; padding: 4px 10px;">${discount}%</span>` :
+                `<span class="product-price" style="font-size: 1.8rem;">${Number(displayPrice).toLocaleString()}원</span>`;
+            
+            document.getElementById('detail-price').innerHTML = priceHTML;
+            
             document.getElementById('order-qty').value = currentQty;
             updateTotalPrice();
             switchView('product-detail-page');
@@ -808,13 +823,15 @@ https://example.com/detail2.jpg"></textarea>
         }
 
         function updateTotalPrice() {
-            const total = selectedProduct.price * currentQty;
+            const displayPrice = selectedProduct.salePrice || selectedProduct.price;
+            const total = displayPrice * currentQty;
             document.getElementById('total-price-display').innerText = total.toLocaleString() + "원";
         }
 
         function goToOrderForm() {
             const size = document.getElementById('option-size').value;
-            const total = selectedProduct.price * currentQty;
+            const displayPrice = selectedProduct.salePrice || selectedProduct.price;
+            const total = displayPrice * currentQty;
             document.getElementById('summary-product-name').innerText = selectedProduct.name;
             document.getElementById('summary-option').innerText = size;
             document.getElementById('summary-qty').innerText = currentQty;
@@ -856,6 +873,7 @@ https://example.com/detail2.jpg"></textarea>
             
             const size = document.getElementById('option-size').value;
             const qty = currentQty;
+            const displayPrice = selectedProduct.salePrice || selectedProduct.price;
             
             // 같은 상품, 같은 옵션이 있는지 확인
             const existingIndex = cart.findIndex(item => 
@@ -871,7 +889,7 @@ https://example.com/detail2.jpg"></textarea>
                 cart.push({
                     id: selectedProduct.id,
                     name: selectedProduct.name,
-                    price: selectedProduct.price,
+                    price: displayPrice,  // 할인가 적용
                     img: selectedProduct.img,
                     option: size,
                     qty: qty
@@ -886,12 +904,13 @@ https://example.com/detail2.jpg"></textarea>
         function buyNow() {
             const size = document.getElementById('option-size').value;
             const qty = currentQty;
+            const displayPrice = selectedProduct.salePrice || selectedProduct.price;
             
             // 임시 장바구니로 설정
             cart = [{
                 id: selectedProduct.id,
                 name: selectedProduct.name,
-                price: selectedProduct.price,
+                price: displayPrice,  // 할인가 적용
                 img: selectedProduct.img,
                 option: size,
                 qty: qty
