@@ -54,6 +54,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
+            min-height: 200px; /* 로딩 메시지 공간 확보 */
         }
 
         .product-card {
@@ -151,6 +152,10 @@
         .status-completed { background: #c8e6c9; color: #2e7d32; }
 
         footer { margin-top: 50px; text-align: center; color: #aaa; font-size: 0.8rem; padding: 20px; cursor: pointer; }
+        
+        /* 로딩/에러 메시지 스타일 */
+        .status-msg { text-align: center; width: 100%; padding: 20px; color: #666; }
+        .error-msg { color: #e74c3c; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -166,7 +171,10 @@
             <h2 style="text-align:center; margin-bottom:30px;">기록 단축을 위한 최고의 선택</h2>
             <!-- DB에서 상품을 불러와 이곳에 표시합니다 -->
             <div id="product-list" class="product-list">
-                <p style="text-align:center; width:100%;">상품을 불러오는 중입니다...</p>
+                <div class="status-msg">
+                    상품 데이터를 불러오는 중입니다...<br>
+                    (잠시만 기다려주세요)
+                </div>
             </div>
         </div>
 
@@ -327,18 +335,19 @@
 
         // 1. Firebase 초기화
         
-        // [교육용 안내] 
-        // 실제 운영 시에는 파이어베이스 콘솔에서 설정값을 복사해 아래 변수에 넣어야 합니다.
-        /* const firebaseConfig = {
+        // [안내] 실제 웹사이트에 배포할 때는 아래 주석을 풀고, 파이어베이스 콘솔에서 복사한 설정값을 입력하세요.
+        /*
+        const firebaseConfig = {
             apiKey: "AIzaSyDHC0F79_7jnC-YwV48Tiusg0NMHdtPhj4",
   authDomain: "berunko-5c8bf.firebaseapp.com",
   projectId: "berunko-5c8bf",
   storageBucket: "berunko-5c8bf.firebasestorage.app",
   messagingSenderId: "933523639470",
   appId: "1:933523639470:web:33967d8bc13e284a80f13f"
-        }; */
+        };
+        */
 
-        // 현재 Canvas 환경에서는 시스템 설정을 자동으로 가져옵니다.
+        // Canvas 환경에서는 시스템 설정을 자동으로 가져옵니다. (외부 사용 시 위 설정값을 사용하도록 수정 필요)
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
         const app = initializeApp(firebaseConfig);
@@ -353,8 +362,14 @@
 
         // 2. 인증 및 리스너 시작
         async function initAuth() {
-            try { await signInAnonymously(auth); } 
-            catch (e) { console.error(e); alert("DB 연결 실패"); }
+            try { 
+                await signInAnonymously(auth); 
+                console.log("Firebase 인증 성공");
+            } 
+            catch (e) { 
+                console.error("인증 실패:", e); 
+                document.getElementById('product-list').innerHTML = `<div class="status-msg error-msg">DB 연결 실패 (인증 오류)<br>${e.message}</div>`;
+            }
         }
         
         onAuthStateChanged(auth, (user) => {
@@ -368,58 +383,80 @@
 
         // [기능 1] 상품 데이터 실시간 동기화 (CRUD: Read)
         function setupProductListener() {
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'products'), orderBy('createdAt', 'desc'));
-            
-            onSnapshot(q, (snapshot) => {
-                const listContainer = document.getElementById('product-list');
-                const adminListContainer = document.getElementById('admin-product-list');
+            const listContainer = document.getElementById('product-list');
+            const adminListContainer = document.getElementById('admin-product-list');
+
+            try {
+                // 쿼리 생성
+                const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'products'), orderBy('createdAt', 'desc'));
                 
-                // 시딩(초기 데이터) 로직
-                if (snapshot.empty && !products.length) {
-                    seedInitialProducts();
-                    return;
-                }
+                onSnapshot(q, (snapshot) => {
+                    // 데이터가 없는 경우
+                    if (snapshot.empty) {
+                        if (!products.length) {
+                             console.log("데이터 없음. 초기 데이터 생성 시도...");
+                             listContainer.innerHTML = `<div class="status-msg">기본 상품 데이터를 생성하고 있습니다...<br>잠시만 기다려주세요.</div>`;
+                             seedInitialProducts().catch(err => {
+                                 console.error("초기 데이터 생성 실패:", err);
+                                 listContainer.innerHTML = `<div class="status-msg error-msg">초기 데이터 생성 실패<br>${err.message}</div>`;
+                             });
+                             return;
+                        } else {
+                            // 원래 데이터가 있었는데 다 지워진 경우
+                            listContainer.innerHTML = "<div class='status-msg'>판매 중인 상품이 없습니다.</div>";
+                            adminListContainer.innerHTML = "<div class='status-msg'>등록된 상품이 없습니다.</div>";
+                            return;
+                        }
+                    }
 
-                products = [];
-                listContainer.innerHTML = "";
-                adminListContainer.innerHTML = "";
+                    products = [];
+                    listContainer.innerHTML = "";
+                    adminListContainer.innerHTML = "";
 
-                snapshot.forEach(docSnap => {
-                    const p = { id: docSnap.id, ...docSnap.data() };
-                    products.push(p);
+                    snapshot.forEach(docSnap => {
+                        const p = { id: docSnap.id, ...docSnap.data() };
+                        products.push(p);
 
-                    // 1. 메인 화면: 상품 카드 생성
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-                    card.onclick = () => window.showProductDetail(p.id);
-                    card.innerHTML = `
-                        <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/300?text=No+Image'">
-                        <div style="padding:10px;">
-                            <div class="product-name">${p.name}</div>
-                            <div class="product-price">${Number(p.price).toLocaleString()}원</div>
-                        </div>
-                    `;
-                    listContainer.appendChild(card);
-
-                    // 2. 관리자 화면: 리스트 생성 (수정/삭제 버튼)
-                    const adminItem = document.createElement('div');
-                    adminItem.className = 'admin-product-item';
-                    adminItem.innerHTML = `
-                        <div class="admin-product-info">
-                            <img src="${p.img}" class="admin-product-thumb">
-                            <div>
-                                <strong>${p.name}</strong><br>
-                                ${Number(p.price).toLocaleString()}원
+                        // 1. 메인 화면: 상품 카드 생성
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        card.onclick = () => window.showProductDetail(p.id);
+                        card.innerHTML = `
+                            <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/300?text=No+Image'">
+                            <div style="padding:10px;">
+                                <div class="product-name">${p.name}</div>
+                                <div class="product-price">${Number(p.price).toLocaleString()}원</div>
                             </div>
-                        </div>
-                        <div>
-                            <button class="btn btn-small btn-edit" onclick="editProduct('${p.id}')">수정</button>
-                            <button class="btn btn-small btn-danger" onclick="deleteProduct('${p.id}')">삭제</button>
-                        </div>
-                    `;
-                    adminListContainer.appendChild(adminItem);
+                        `;
+                        listContainer.appendChild(card);
+
+                        // 2. 관리자 화면: 리스트 생성
+                        const adminItem = document.createElement('div');
+                        adminItem.className = 'admin-product-item';
+                        adminItem.innerHTML = `
+                            <div class="admin-product-info">
+                                <img src="${p.img}" class="admin-product-thumb">
+                                <div>
+                                    <strong>${p.name}</strong><br>
+                                    ${Number(p.price).toLocaleString()}원
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-small btn-edit" onclick="editProduct('${p.id}')">수정</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteProduct('${p.id}')">삭제</button>
+                            </div>
+                        `;
+                        adminListContainer.appendChild(adminItem);
+                    });
+                }, (error) => {
+                    // onSnapshot 에러 콜백
+                    console.error("데이터 읽기 권한/네트워크 오류:", error);
+                    listContainer.innerHTML = `<div class="status-msg error-msg">상품 목록을 불러올 수 없습니다.<br>오류: ${error.message}</div>`;
                 });
-            });
+            } catch (err) {
+                console.error("리스너 설정 중 오류:", err);
+                listContainer.innerHTML = `<div class="status-msg error-msg">시스템 오류가 발생했습니다.<br>${err.message}</div>`;
+            }
         }
 
         async function seedInitialProducts() {
@@ -435,6 +472,7 @@
                 })
             );
             await Promise.all(promises);
+            console.log("초기 상품 데이터 생성 완료");
         }
 
         // [기능 2] 주문 데이터 리스너 & 통계 집계
@@ -447,7 +485,7 @@
                 allOrders = [];
                 let html = "";
 
-                if (snapshot.empty) html = "<p>주문 내역이 없습니다.</p>";
+                if (snapshot.empty) html = "<div class='status-msg'>주문 내역이 없습니다.</div>";
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
@@ -473,6 +511,9 @@
                 });
                 listContainer.innerHTML = html;
                 calculateStats();
+            }, (error) => {
+                console.error("주문 데이터 로딩 실패:", error);
+                document.getElementById('admin-order-list').innerHTML = `<div class="status-msg error-msg">주문 목록 로딩 실패<br>${error.message}</div>`;
             });
         }
 
@@ -537,7 +578,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert("처리 실패");
+                alert("처리 실패: " + err.message);
             }
         });
 
@@ -576,7 +617,7 @@
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
             } catch(err) {
                 console.error(err);
-                alert("삭제 실패");
+                alert("삭제 실패: " + err.message);
             }
         };
 
@@ -635,7 +676,16 @@
         };
 
         window.goBackToDetail = () => window.switchView('product-detail-page');
-        window.goToAdmin = () => { if(confirm("관리자 모드로 진입합니다.")) window.switchView('admin-page'); };
+        
+        // [수정됨] 관리자 진입 시 비밀번호 확인 기능 추가
+        window.goToAdmin = () => { 
+            const password = prompt("관리자 비밀번호를 입력하세요:");
+            if (password === "1234") { // 교육용 비밀번호 설정
+                window.switchView('admin-page');
+            } else if (password !== null) { // 취소 버튼을 누르지 않았는데 틀린 경우
+                alert("비밀번호가 올바르지 않습니다. (힌트: 1234)");
+            }
+        };
 
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -661,7 +711,7 @@
                 document.getElementById('final-price').innerText = orderData.totalPrice.toLocaleString();
                 window.switchView('success-page');
                 e.target.reset();
-            } catch(err) { alert("주문 실패"); }
+            } catch(err) { alert("주문 실패: " + err.message); }
             finally { btn.disabled = false; btn.innerText = "주문 완료하기"; }
         });
 
