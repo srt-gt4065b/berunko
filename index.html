@@ -151,7 +151,41 @@
         .status-pending { background: #ffe0b2; color: #e65100; }
         .status-completed { background: #c8e6c9; color: #2e7d32; }
 
-        footer { margin-top: 50px; text-align: center; color: #aaa; font-size: 0.8rem; padding: 20px; cursor: pointer; }
+        /* Footer 스타일 개선 */
+        footer { 
+            margin-top: 50px; 
+            padding: 30px 20px;
+            background-color: #f8f8f8;
+            border-top: 1px solid #ddd;
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .admin-btn {
+            background-color: var(--admin-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            transition: background-color 0.3s;
+        }
+        
+        .admin-btn:hover {
+            background-color: #34495e;
+        }
+        
+        .copyright {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
         
         /* 로딩/에러 메시지 스타일 */
         .status-msg { text-align: center; width: 100%; padding: 20px; color: #666; }
@@ -359,43 +393,16 @@
 
     </div>
 
-    <footer onclick="goToAdmin()">
-        © 2024 Verunco Socks Corp. (관리자 모드: 하단 클릭)
+    <footer>
+        <div class="footer-content">
+            <button class="admin-btn" onclick="goToAdmin()">🔐 관리자 모드</button>
+            <div class="copyright">© 2024 Verunco Socks Corp.</div>
+        </div>
     </footer>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // [수정] signInWithCustomToken 추가 (필수)
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // [수정] orderBy, query 제거 (권한 문제 해결을 위해 메모리 내 정렬로 변경)
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 1. Firebase 초기화
-        
-        // [안내] 실제 웹사이트에 배포할 때는 아래 주석을 풀고, 파이어베이스 콘솔에서 복사한 설정값을 입력하세요.
-        /*
-        const firebaseConfig = {
-            apiKey: "AIzaSyDHC0F79_7jnC-YwV48Tiusg0NMHdtPhj4",
-  authDomain: "berunko-5c8bf.firebaseapp.com",
-  projectId: "berunko-5c8bf",
-  storageBucket: "berunko-5c8bf.firebasestorage.app",
-  messagingSenderId: "933523639470",
-  appId: "1:933523639470:web:33967d8bc13e284a80f13f"
-        };
-        */
-
-        // Canvas 환경에서는 시스템 설정을 자동으로 가져옵니다.
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-        
-        // [변경됨] DB 연결 전에도 작동하도록 초기 상품 데이터를 변수에 미리 넣어둡니다.
-        // HTML에 하드코딩된 내용과 일치해야 초기 클릭이 작동합니다.
+    <!-- Firebase SDK 및 전역 변수 선언 -->
+    <script>
+        // [수정1] 전역 변수들을 스크립트 최상단에 선언
         const defaultProducts = [
             { id: 'static-1', name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
             { id: 'static-2', name: "베룽코 마라톤 프로", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
@@ -408,21 +415,133 @@
         let currentQty = 1;
         let allOrders = [];
 
+        // [수정2] 핵심 UI 함수들을 즉시 전역으로 정의
+        function switchView(viewId) {
+            ['main-page', 'product-detail-page', 'order-form-page', 'success-page', 'admin-page'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function goHome() { 
+            selectedProduct = null; 
+            switchView('main-page'); 
+        }
+        
+        function showProductDetail(id) {
+            console.log('showProductDetail 호출:', id, 'products:', products);
+            selectedProduct = products.find(p => p.id === id);
+            if(!selectedProduct) {
+                console.error('상품을 찾을 수 없습니다:', id);
+                return;
+            }
+            currentQty = 1;
+            document.getElementById('detail-img').src = selectedProduct.img;
+            document.getElementById('detail-name').innerText = selectedProduct.name;
+            document.getElementById('detail-price').innerText = Number(selectedProduct.price).toLocaleString() + "원";
+            document.getElementById('order-qty').value = currentQty;
+            updateTotalPrice();
+            switchView('product-detail-page');
+        }
+
+        function changeQty(change) {
+            currentQty += change;
+            if (currentQty < 1) currentQty = 1;
+            document.getElementById('order-qty').value = currentQty;
+            updateTotalPrice();
+        }
+
+        function updateTotalPrice() {
+            const total = selectedProduct.price * currentQty;
+            document.getElementById('total-price-display').innerText = total.toLocaleString() + "원";
+        }
+
+        function goToOrderForm() {
+            const size = document.getElementById('option-size').value;
+            const total = selectedProduct.price * currentQty;
+            document.getElementById('summary-product-name').innerText = selectedProduct.name;
+            document.getElementById('summary-option').innerText = size;
+            document.getElementById('summary-qty').innerText = currentQty;
+            document.getElementById('summary-total').innerText = total.toLocaleString() + "원";
+            switchView('order-form-page');
+        }
+
+        function goBackToDetail() { 
+            switchView('product-detail-page'); 
+        }
+        
+        function goToAdmin() { 
+            if(confirm("관리자 모드로 진입하시겠습니까?")) {
+                switchView('admin-page');
+            }
+        }
+
+        function switchAdminTab(tabName) {
+            ['orders', 'products', 'stats'].forEach(t => {
+                document.getElementById(`tab-btn-${t}`).classList.remove('active');
+                document.getElementById(`admin-tab-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
+        }
+
+        function editProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+
+            document.getElementById('product-form-title').innerText = "상품 수정 모드";
+            document.getElementById('edit-prod-id').value = id;
+            document.getElementById('new-prod-name').value = p.name;
+            document.getElementById('new-prod-price').value = p.price;
+            document.getElementById('new-prod-img').value = p.img;
+            
+            document.getElementById('btn-save-product').innerText = "수정사항 저장";
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            
+            document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            document.getElementById('product-form-title').innerText = "새 상품 등록";
+            document.getElementById('edit-prod-id').value = "";
+            document.getElementById('add-product-form').reset();
+            
+            document.getElementById('btn-save-product').innerText = "상품 추가하기";
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 1. Firebase 초기화
+        // [실제 배포시] 아래 설정값을 사용합니다
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHC0F79_7jnC-YwV48Tiusg0NMHdtPhj4",
+            authDomain: "berunko-5c8bf.firebaseapp.com",
+            projectId: "berunko-5c8bf",
+            storageBucket: "berunko-5c8bf.firebasestorage.app",
+            messagingSenderId: "933523639470",
+            appId: "1:933523639470:web:33967d8bc13e284a80f13f"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
         // 2. 인증 및 리스너 시작
         async function initAuth() {
             try { 
-                // [수정] Canvas 환경에서 제공하는 커스텀 토큰이 있으면 이를 우선 사용하여 인증
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                    console.log("Firebase Custom Token 인증 성공");
-                } else {
-                    await signInAnonymously(auth); 
-                    console.log("Firebase 익명 인증 성공");
-                }
+                await signInAnonymously(auth); 
+                console.log("Firebase 익명 인증 성공");
             } 
             catch (e) { 
                 console.error("인증 실패:", e); 
-                // 인증 실패 시에도 하드코딩된 상품이 보이므로 에러 메시지로 덮어쓰지 않습니다.
             }
         }
         
@@ -441,11 +560,9 @@
             const adminListContainer = document.getElementById('admin-product-list');
 
             try {
-                // [수정] query() 및 orderBy() 제거 - 단순 collection 조회로 변경
-                const productCollection = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+                const productCollection = collection(db, 'products');
                 
                 onSnapshot(productCollection, (snapshot) => {
-                    // 데이터가 없는 경우 (DB가 비었을 때)
                     if (snapshot.empty) {
                         if (products.length === 4 && products[0].id === 'static-1') {
                             console.log("DB 비어있음. 시딩 시작...");
@@ -454,13 +571,11 @@
                         return; 
                     }
 
-                    // [수정] 데이터를 배열에 담은 후 자바스크립트에서 정렬 (최신순)
                     let tempProducts = [];
                     snapshot.forEach(docSnap => {
                         tempProducts.push({ id: docSnap.id, ...docSnap.data() });
                     });
                     
-                    // 메모리 내 정렬 (createdAt 역순)
                     tempProducts.sort((a, b) => {
                         const timeA = a.createdAt ? a.createdAt.seconds : 0;
                         const timeB = b.createdAt ? b.createdAt.seconds : 0;
@@ -476,7 +591,7 @@
                         // 1. 메인 화면 카드
                         const card = document.createElement('div');
                         card.className = 'product-card';
-                        card.onclick = () => window.showProductDetail(p.id);
+                        card.onclick = () => showProductDetail(p.id);
                         card.innerHTML = `
                             <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/300?text=No+Image'">
                             <div style="padding:10px;">
@@ -513,7 +628,6 @@
         }
 
         async function seedInitialProducts() {
-            // 시딩할 데이터는 하드코딩된 데이터와 동일하게 구성
             const initialData = [
                 { name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
                 { name: "베룽코 마라톤 프로", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
@@ -521,7 +635,7 @@
                 { name: "베룽코 트레일", price: 14000, img: "https://placehold.co/300x300/brown/white?text=Trail" }
             ];
             const promises = initialData.map(p => 
-                addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), {
+                addDoc(collection(db, 'products'), {
                     ...p, createdAt: serverTimestamp()
                 })
             );
@@ -531,8 +645,7 @@
 
         // [기능 2] 주문 데이터 리스너 & 통계 집계
         function setupOrderListener() {
-            // [수정] query() 및 orderBy() 제거
-            const orderCollection = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+            const orderCollection = collection(db, 'orders');
 
             onSnapshot(orderCollection, (snapshot) => {
                 const listContainer = document.getElementById('admin-order-list');
@@ -545,12 +658,10 @@
                     return;
                 }
 
-                // [수정] 데이터를 배열에 담은 후 자바스크립트에서 정렬 (최신순)
                 snapshot.forEach((docSnap) => {
                     allOrders.push({ id: docSnap.id, ...docSnap.data() });
                 });
 
-                // 메모리 내 정렬 (orderDate 역순)
                 allOrders.sort((a, b) => {
                     const timeA = a.orderDate ? a.orderDate.seconds : 0;
                     const timeB = b.orderDate ? b.orderDate.seconds : 0;
@@ -628,13 +739,13 @@
 
             try {
                 if (id) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), {
+                    await updateDoc(doc(db, 'products', id), {
                         name, price, img
                     });
                     alert("상품이 수정되었습니다!");
-                    window.cancelEdit(); 
+                    cancelEdit(); 
                 } else {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), {
+                    await addDoc(collection(db, 'products'), {
                         name, price, img, createdAt: serverTimestamp()
                     });
                     alert("새 상품이 등록되었습니다!");
@@ -646,107 +757,18 @@
             }
         });
 
-        // [기능 5] 상품 수정 모드 진입
-        window.editProduct = (id) => {
-            const p = products.find(prod => prod.id === id);
-            if (!p) return;
-
-            document.getElementById('product-form-title').innerText = "상품 수정 모드";
-            document.getElementById('edit-prod-id').value = id;
-            document.getElementById('new-prod-name').value = p.name;
-            document.getElementById('new-prod-price').value = p.price;
-            document.getElementById('new-prod-img').value = p.img;
-            
-            document.getElementById('btn-save-product').innerText = "수정사항 저장";
-            document.getElementById('btn-cancel-edit').classList.remove('hidden');
-            
-            document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
-        };
-
-        // [기능 6] 상품 수정 취소
-        window.cancelEdit = () => {
-            document.getElementById('product-form-title').innerText = "새 상품 등록";
-            document.getElementById('edit-prod-id').value = "";
-            document.getElementById('add-product-form').reset();
-            
-            document.getElementById('btn-save-product').innerText = "상품 추가하기";
-            document.getElementById('btn-cancel-edit').classList.add('hidden');
-        };
-
-        // [기능 7] 상품 삭제 (CRUD: Delete)
+        // [기능 5] 상품 삭제 (CRUD: Delete)
         window.deleteProduct = async (id) => {
             if(!confirm("정말 이 상품을 삭제하시겠습니까?")) return;
             try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+                await deleteDoc(doc(db, 'products', id));
             } catch(err) {
                 console.error(err);
                 alert("삭제 실패: " + err.message);
             }
         };
 
-        // --- UI 헬퍼 함수들 ---
-        window.switchView = (viewId) => {
-            ['main-page', 'product-detail-page', 'order-form-page', 'success-page', 'admin-page'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(viewId).classList.remove('hidden');
-            window.scrollTo(0, 0);
-        };
-        
-        window.switchAdminTab = (tabName) => {
-            ['orders', 'products', 'stats'].forEach(t => {
-                document.getElementById(`tab-btn-${t}`).classList.remove('active');
-                document.getElementById(`admin-tab-${t}`).classList.add('hidden');
-            });
-            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
-            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
-        };
-
-        window.goHome = () => { selectedProduct = null; window.switchView('main-page'); };
-        
-        window.showProductDetail = (id) => {
-            selectedProduct = products.find(p => p.id === id);
-            if(!selectedProduct) return;
-            currentQty = 1;
-            document.getElementById('detail-img').src = selectedProduct.img;
-            document.getElementById('detail-name').innerText = selectedProduct.name;
-            document.getElementById('detail-price').innerText = Number(selectedProduct.price).toLocaleString() + "원";
-            document.getElementById('order-qty').value = currentQty;
-            window.updateTotalPrice();
-            window.switchView('product-detail-page');
-        };
-
-        window.changeQty = (change) => {
-            currentQty += change;
-            if (currentQty < 1) currentQty = 1;
-            document.getElementById('order-qty').value = currentQty;
-            window.updateTotalPrice();
-        };
-
-        window.updateTotalPrice = () => {
-            const total = selectedProduct.price * currentQty;
-            document.getElementById('total-price-display').innerText = total.toLocaleString() + "원";
-        };
-
-        window.goToOrderForm = () => {
-            const size = document.getElementById('option-size').value;
-            const total = selectedProduct.price * currentQty;
-            document.getElementById('summary-product-name').innerText = selectedProduct.name;
-            document.getElementById('summary-option').innerText = size;
-            document.getElementById('summary-qty').innerText = currentQty;
-            document.getElementById('summary-total').innerText = total.toLocaleString() + "원";
-            window.switchView('order-form-page');
-        };
-
-        window.goBackToDetail = () => window.switchView('product-detail-page');
-        
-        // [수정됨] 관리자 진입 시 비밀번호 확인 기능 제거 (보안 최소화 요청 반영)
-        window.goToAdmin = () => { 
-            if(confirm("관리자 모드로 진입하시겠습니까? (누구나 접근 가능)")) {
-                window.switchView('admin-page');
-            }
-        };
-
+        // [기능 6] 주문 제출
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return alert("초기화 중...");
@@ -767,17 +789,18 @@
             };
 
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), orderData);
+                await addDoc(collection(db, 'orders'), orderData);
                 document.getElementById('final-price').innerText = orderData.totalPrice.toLocaleString();
-                window.switchView('success-page');
+                switchView('success-page');
                 e.target.reset();
             } catch(err) { alert("주문 실패: " + err.message); }
             finally { btn.disabled = false; btn.innerText = "주문 완료하기"; }
         });
 
+        // [기능 7] 주문 배송 처리
         window.updateOrderStatus = async (docId) => {
             if(!confirm("배송 완료 처리하시겠습니까?")) return;
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', docId), { status: "배송완료" });
+            await updateDoc(doc(db, 'orders', docId), { status: "배송완료" });
         };
     </script>
 </body>
