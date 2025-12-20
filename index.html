@@ -326,6 +326,19 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 1. Firebase 초기화
+        
+        // [교육용 안내] 
+        // 실제 운영 시에는 파이어베이스 콘솔에서 설정값을 복사해 아래 변수에 넣어야 합니다.
+        /* const firebaseConfig = {
+            apiKey: "AIzaSyDHC0F79_7jnC-YwV48Tiusg0NMHdtPhj4",
+  authDomain: "berunko-5c8bf.firebaseapp.com",
+  projectId: "berunko-5c8bf",
+  storageBucket: "berunko-5c8bf.firebasestorage.app",
+  messagingSenderId: "933523639470",
+  appId: "1:933523639470:web:33967d8bc13e284a80f13f"
+        }; */
+
+        // 현재 Canvas 환경에서는 시스템 설정을 자동으로 가져옵니다.
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
         const app = initializeApp(firebaseConfig);
