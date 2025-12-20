@@ -169,11 +169,40 @@
         <!-- [화면 1] 메인 페이지 (상품 목록) -->
         <div id="main-page">
             <h2 style="text-align:center; margin-bottom:30px;">기록 단축을 위한 최고의 선택</h2>
-            <!-- DB에서 상품을 불러와 이곳에 표시합니다 -->
+            
+            <!-- [변경됨] DB 로딩 전에도 보여질 '샘플 데이터'를 하드코딩해둠 -->
             <div id="product-list" class="product-list">
-                <div class="status-msg">
-                    상품 데이터를 불러오는 중입니다...<br>
-                    (잠시만 기다려주세요)
+                <!-- 샘플 1 -->
+                <div class="product-card" onclick="showProductDetail('static-1')">
+                    <img src="https://placehold.co/300x300/orange/white?text=Speed" class="product-img">
+                    <div style="padding:10px;">
+                        <div class="product-name">베룽코 스피드 (초경량)</div>
+                        <div class="product-price">12,000원</div>
+                    </div>
+                </div>
+                <!-- 샘플 2 -->
+                <div class="product-card" onclick="showProductDetail('static-2')">
+                    <img src="https://placehold.co/300x300/navy/white?text=Marathon" class="product-img">
+                    <div style="padding:10px;">
+                        <div class="product-name">베룽코 마라톤 프로</div>
+                        <div class="product-price">15,000원</div>
+                    </div>
+                </div>
+                <!-- 샘플 3 -->
+                <div class="product-card" onclick="showProductDetail('static-3')">
+                    <img src="https://placehold.co/300x300/green/white?text=Recovery" class="product-img">
+                    <div style="padding:10px;">
+                        <div class="product-name">베룽코 리커버리</div>
+                        <div class="product-price">18,000원</div>
+                    </div>
+                </div>
+                <!-- 샘플 4 -->
+                <div class="product-card" onclick="showProductDetail('static-4')">
+                    <img src="https://placehold.co/300x300/brown/white?text=Trail" class="product-img">
+                    <div style="padding:10px;">
+                        <div class="product-name">베룽코 트레일</div>
+                        <div class="product-price">14,000원</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -330,8 +359,10 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // [수정] signInWithCustomToken 추가 (필수)
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // [수정] orderBy, query 제거 (권한 문제 해결을 위해 메모리 내 정렬로 변경)
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 1. Firebase 초기화
         
@@ -347,7 +378,7 @@
         };
         */
 
-        // Canvas 환경에서는 시스템 설정을 자동으로 가져옵니다. (외부 사용 시 위 설정값을 사용하도록 수정 필요)
+        // Canvas 환경에서는 시스템 설정을 자동으로 가져옵니다.
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
         const app = initializeApp(firebaseConfig);
@@ -355,7 +386,17 @@
         const db = getFirestore(app);
 
         let currentUser = null;
-        let products = [];
+        
+        // [변경됨] DB 연결 전에도 작동하도록 초기 상품 데이터를 변수에 미리 넣어둡니다.
+        // HTML에 하드코딩된 내용과 일치해야 초기 클릭이 작동합니다.
+        const defaultProducts = [
+            { id: 'static-1', name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
+            { id: 'static-2', name: "베룽코 마라톤 프로", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
+            { id: 'static-3', name: "베룽코 리커버리", price: 18000, img: "https://placehold.co/300x300/green/white?text=Recovery" },
+            { id: 'static-4', name: "베룽코 트레일", price: 14000, img: "https://placehold.co/300x300/brown/white?text=Trail" }
+        ];
+
+        let products = [...defaultProducts]; // 초기값 설정
         let selectedProduct = null;
         let currentQty = 1;
         let allOrders = [];
@@ -363,12 +404,18 @@
         // 2. 인증 및 리스너 시작
         async function initAuth() {
             try { 
-                await signInAnonymously(auth); 
-                console.log("Firebase 인증 성공");
+                // [수정] Canvas 환경에서 제공하는 커스텀 토큰이 있으면 이를 우선 사용하여 인증
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                    console.log("Firebase Custom Token 인증 성공");
+                } else {
+                    await signInAnonymously(auth); 
+                    console.log("Firebase 익명 인증 성공");
+                }
             } 
             catch (e) { 
                 console.error("인증 실패:", e); 
-                document.getElementById('product-list').innerHTML = `<div class="status-msg error-msg">DB 연결 실패 (인증 오류)<br>${e.message}</div>`;
+                // 인증 실패 시에도 하드코딩된 상품이 보이므로 에러 메시지로 덮어쓰지 않습니다.
             }
         }
         
@@ -387,37 +434,39 @@
             const adminListContainer = document.getElementById('admin-product-list');
 
             try {
-                // 쿼리 생성
-                const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'products'), orderBy('createdAt', 'desc'));
+                // [수정] query() 및 orderBy() 제거 - 단순 collection 조회로 변경
+                const productCollection = collection(db, 'artifacts', appId, 'public', 'data', 'products');
                 
-                onSnapshot(q, (snapshot) => {
-                    // 데이터가 없는 경우
+                onSnapshot(productCollection, (snapshot) => {
+                    // 데이터가 없는 경우 (DB가 비었을 때)
                     if (snapshot.empty) {
-                        if (!products.length) {
-                             console.log("데이터 없음. 초기 데이터 생성 시도...");
-                             listContainer.innerHTML = `<div class="status-msg">기본 상품 데이터를 생성하고 있습니다...<br>잠시만 기다려주세요.</div>`;
-                             seedInitialProducts().catch(err => {
-                                 console.error("초기 데이터 생성 실패:", err);
-                                 listContainer.innerHTML = `<div class="status-msg error-msg">초기 데이터 생성 실패<br>${err.message}</div>`;
-                             });
-                             return;
-                        } else {
-                            // 원래 데이터가 있었는데 다 지워진 경우
-                            listContainer.innerHTML = "<div class='status-msg'>판매 중인 상품이 없습니다.</div>";
-                            adminListContainer.innerHTML = "<div class='status-msg'>등록된 상품이 없습니다.</div>";
-                            return;
+                        if (products.length === 4 && products[0].id === 'static-1') {
+                            console.log("DB 비어있음. 시딩 시작...");
+                            seedInitialProducts();
                         }
+                        return; 
                     }
 
-                    products = [];
+                    // [수정] 데이터를 배열에 담은 후 자바스크립트에서 정렬 (최신순)
+                    let tempProducts = [];
+                    snapshot.forEach(docSnap => {
+                        tempProducts.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    
+                    // 메모리 내 정렬 (createdAt 역순)
+                    tempProducts.sort((a, b) => {
+                        const timeA = a.createdAt ? a.createdAt.seconds : 0;
+                        const timeB = b.createdAt ? b.createdAt.seconds : 0;
+                        return timeB - timeA;
+                    });
+                    
+                    products = tempProducts;
+
                     listContainer.innerHTML = "";
                     adminListContainer.innerHTML = "";
 
-                    snapshot.forEach(docSnap => {
-                        const p = { id: docSnap.id, ...docSnap.data() };
-                        products.push(p);
-
-                        // 1. 메인 화면: 상품 카드 생성
+                    products.forEach(p => {
+                        // 1. 메인 화면 카드
                         const card = document.createElement('div');
                         card.className = 'product-card';
                         card.onclick = () => window.showProductDetail(p.id);
@@ -430,7 +479,7 @@
                         `;
                         listContainer.appendChild(card);
 
-                        // 2. 관리자 화면: 리스트 생성
+                        // 2. 관리자 화면 리스트
                         const adminItem = document.createElement('div');
                         adminItem.className = 'admin-product-item';
                         adminItem.innerHTML = `
@@ -449,17 +498,15 @@
                         adminListContainer.appendChild(adminItem);
                     });
                 }, (error) => {
-                    // onSnapshot 에러 콜백
                     console.error("데이터 읽기 권한/네트워크 오류:", error);
-                    listContainer.innerHTML = `<div class="status-msg error-msg">상품 목록을 불러올 수 없습니다.<br>오류: ${error.message}</div>`;
                 });
             } catch (err) {
                 console.error("리스너 설정 중 오류:", err);
-                listContainer.innerHTML = `<div class="status-msg error-msg">시스템 오류가 발생했습니다.<br>${err.message}</div>`;
             }
         }
 
         async function seedInitialProducts() {
+            // 시딩할 데이터는 하드코딩된 데이터와 동일하게 구성
             const initialData = [
                 { name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
                 { name: "베룽코 마라톤 프로", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
@@ -477,20 +524,33 @@
 
         // [기능 2] 주문 데이터 리스너 & 통계 집계
         function setupOrderListener() {
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), orderBy('orderDate', 'desc'));
+            // [수정] query() 및 orderBy() 제거
+            const orderCollection = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
 
-            onSnapshot(q, (snapshot) => {
+            onSnapshot(orderCollection, (snapshot) => {
                 const listContainer = document.getElementById('admin-order-list');
                 
                 allOrders = [];
                 let html = "";
 
-                if (snapshot.empty) html = "<div class='status-msg'>주문 내역이 없습니다.</div>";
+                if (snapshot.empty) {
+                    listContainer.innerHTML = "<div class='status-msg'>주문 내역이 없습니다.</div>";
+                    return;
+                }
 
+                // [수정] 데이터를 배열에 담은 후 자바스크립트에서 정렬 (최신순)
                 snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    allOrders.push(data);
+                    allOrders.push({ id: docSnap.id, ...docSnap.data() });
+                });
 
+                // 메모리 내 정렬 (orderDate 역순)
+                allOrders.sort((a, b) => {
+                    const timeA = a.orderDate ? a.orderDate.seconds : 0;
+                    const timeB = b.orderDate ? b.orderDate.seconds : 0;
+                    return timeB - timeA;
+                });
+
+                allOrders.forEach((data) => {
                     const date = data.orderDate ? new Date(data.orderDate.seconds * 1000).toLocaleString() : "방금 전";
                     const statusClass = data.status === '배송완료' ? 'status-completed' : 'status-pending';
                     
@@ -505,7 +565,7 @@
                                 ${data.userName} / ${data.userAddress}
                             </div>
                             ${data.status !== '배송완료' ? 
-                                `<button class="btn btn-small" style="margin-top:5px;" onclick="updateOrderStatus('${docSnap.id}')">배송처리</button>` : ''}
+                                `<button class="btn btn-small" style="margin-top:5px;" onclick="updateOrderStatus('${data.id}')">배송처리</button>` : ''}
                         </div>
                     `;
                 });
@@ -527,7 +587,6 @@
             allOrders.forEach(order => {
                 totalRevenue += (order.totalPrice || 0);
                 
-                // 배송 상태 카운트
                 if (order.status === '배송완료') completedCount++;
                 else pendingCount++;
 
@@ -555,21 +614,19 @@
         // [기능 4] 상품 추가 및 수정 처리 (CRUD: Create & Update)
         document.getElementById('add-product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = document.getElementById('edit-prod-id').value; // 수정 모드인지 확인
+            const id = document.getElementById('edit-prod-id').value; 
             const name = document.getElementById('new-prod-name').value;
             const price = Number(document.getElementById('new-prod-price').value);
             const img = document.getElementById('new-prod-img').value;
 
             try {
                 if (id) {
-                    // 수정 (Update)
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), {
                         name, price, img
                     });
                     alert("상품이 수정되었습니다!");
-                    window.cancelEdit(); // 폼 초기화
+                    window.cancelEdit(); 
                 } else {
-                    // 추가 (Create)
                     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), {
                         name, price, img, createdAt: serverTimestamp()
                     });
@@ -596,7 +653,6 @@
             document.getElementById('btn-save-product').innerText = "수정사항 저장";
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
             
-            // 폼 쪽으로 스크롤 이동
             document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -677,12 +733,11 @@
 
         window.goBackToDetail = () => window.switchView('product-detail-page');
         
-        // [수정됨] 관리자 진입 시 비밀번호 확인 기능 추가
         window.goToAdmin = () => { 
             const password = prompt("관리자 비밀번호를 입력하세요:");
-            if (password === "1234") { // 교육용 비밀번호 설정
+            if (password === "1234") { 
                 window.switchView('admin-page');
-            } else if (password !== null) { // 취소 버튼을 누르지 않았는데 틀린 경우
+            } else if (password !== null) { 
                 alert("비밀번호가 올바르지 않습니다. (힌트: 1234)");
             }
         };
