@@ -110,6 +110,36 @@
             font-weight: bold;
             margin-left: 5px;
         }
+        
+        /* 색상 선택 버튼 */
+        .color-option-btn {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-option-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .color-option-btn.selected {
+            border-color: var(--primary-color);
+            border-width: 4px;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-color);
+        }
+        
+        .color-option-label {
+            display: block;
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: #666;
+        }
 
         /* 버튼 및 입력 폼 */
         .btn {
@@ -339,35 +369,6 @@
         .empty-cart-icon {
             font-size: 4rem;
             margin-bottom: 20px;
-        }
-        
-        .color-option-btn {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #ddd;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .color-option-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .color-option-btn.selected {
-            border-color: var(--primary-color);
-            border-width: 4px;
-            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-color);
-        }
-        
-        .color-option-label {
-            display: block;
-            text-align: center;
-            font-size: 0.8rem;
-            margin-top: 5px;
-            color: #666;
         }
     </style>
 </head>
@@ -885,7 +886,6 @@ https://example.com/detail2.jpg"></textarea>
                         `;
                         colorContainer.appendChild(colorBtn);
                     });
-                    
                     selectedColor = selectedProduct.colorStocks[0].name;
                 } else {
                     colorContainer.innerHTML = '<p style="color: #999; font-size: 0.9rem;">색상 옵션 없음</p>';
@@ -893,23 +893,19 @@ https://example.com/detail2.jpg"></textarea>
                 }
             }
             
-            
             document.getElementById('order-qty').value = currentQty;
             updateTotalPrice();
             switchView('product-detail-page');
         }
 
-        
+
         function selectColor(colorName, btnElement) {
             selectedColor = colorName;
-            
             document.querySelectorAll('.color-option-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            
             btnElement.classList.add('selected');
         }
-        
         function changeQty(change) {
             currentQty += change;
             if (currentQty < 1) currentQty = 1;
@@ -971,9 +967,9 @@ https://example.com/detail2.jpg"></textarea>
             const displayPrice = selectedProduct.salePrice || selectedProduct.price;
             const color = selectedColor || '색상 미선택';
             
-            // 같은 상품, 같은 옵션이 있는지 확인
+            // 같은 상품, 같은 색상, 같은 사이즈가 있는지 확인
             const existingIndex = cart.findIndex(item => 
-                item.id === selectedProduct.id && item.option === size
+                item.id === selectedProduct.id && item.option === size && item.color === color
             );
             
             if (existingIndex >= 0) {
@@ -1038,8 +1034,8 @@ https://example.com/detail2.jpg"></textarea>
                         <img src="${item.img}" class="cart-item-img" onerror="this.src='https://placehold.co/80?text=No+Image'">
                         <div class="cart-item-info">
                             <div class="cart-item-name">${item.name}</div>
+                            ${item.color ? `<div class="cart-item-option">색상: ${item.color}</div>` : ''}
                             <div class="cart-item-option">사이즈: ${item.option}</div>
-                            ${item.color ? `<div class="cart-item-option">색상: ${item.color}</div>` : ''''''}
                             <div class="cart-item-price">${(item.price * item.qty).toLocaleString()}원</div>
                         </div>
                         <div class="cart-qty-control">
