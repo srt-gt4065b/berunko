@@ -14,22 +14,6 @@
             --admin-accent: #3498db;
         }
 
-        body {<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>베룽코 양말 - 마라토너를 위한 선택</title>
-    <style>
-        /* [스타일 정의 구역] */
-        :root {
-            --primary-color: #ff6b00;
-            --text-color: #333;
-            --bg-color: #f5f5f5;
-            --admin-bg: #2c3e50; /* 관리자 테마색 */
-            --admin-accent: #3498db;
-        }
-
         body {
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             margin: 0;
@@ -378,12 +362,10 @@
         <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto;">
             <h1 onclick="goHome()" style="margin: 0; cursor: pointer;">🧦 베룽코 양말</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
-                <!-- Firebase 연결 상태 표시 -->
                 <div id="firebase-status" style="font-size: 0.8rem; color: #999;" title="Firebase 연결 상태">
                     <span id="status-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ffa500; margin-right: 5px;"></span>
                     <span id="status-text">연결중...</span>
                 </div>
-                <!-- 장바구니 아이콘 -->
                 <div onclick="showCart()" style="position: relative; cursor: pointer; font-size: 1.8rem;">
                     🛒
                     <span id="cart-badge" class="cart-badge hidden">0</span>
@@ -394,9 +376,7 @@
 
     <div class="container">
         
-        <!-- [화면 1] 메인 페이지 (상품 목록) -->
         <div id="main-page">
-            <!-- [추가됨] 상단 메인 배너 이미지 -->
             <div style="margin-bottom: 40px; text-align: center;">
                 <img src="https://placehold.co/800x350/ff6b00/ffffff?text=VERUNCO+RUNNING&font=roboto" 
                      style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.2);" 
@@ -405,9 +385,7 @@
 
             <h2 style="text-align:center; margin-bottom:30px;" id="main-header-text">기록 단축을 위한 최고의 선택</h2>
             
-            <!-- [변경됨] DB 로딩 전에도 보여질 '샘플 데이터'를 하드코딩해둠 -->
             <div id="product-list" class="product-list">
-                <!-- 샘플 1 -->
                 <div class="product-card" onclick="showProductDetail('static-1')">
                     <img src="https://placehold.co/300x300/orange/white?text=Speed" class="product-img">
                     <div style="padding:10px;">
@@ -415,7 +393,6 @@
                         <div class="product-price">12,000원</div>
                     </div>
                 </div>
-                <!-- 샘플 2 -->
                 <div class="product-card" onclick="showProductDetail('static-2')">
                     <img src="https://placehold.co/300x300/navy/white?text=Marathon" class="product-img">
                     <div style="padding:10px;">
@@ -423,7 +400,6 @@
                         <div class="product-price">15,000원</div>
                     </div>
                 </div>
-                <!-- 샘플 3 -->
                 <div class="product-card" onclick="showProductDetail('static-3')">
                     <img src="https://placehold.co/300x300/green/white?text=Recovery" class="product-img">
                     <div style="padding:10px;">
@@ -431,7 +407,6 @@
                         <div class="product-price">18,000원</div>
                     </div>
                 </div>
-                <!-- 샘플 4 -->
                 <div class="product-card" onclick="showProductDetail('static-4')">
                     <img src="https://placehold.co/300x300/brown/white?text=Trail" class="product-img">
                     <div style="padding:10px;">
@@ -442,7 +417,6 @@
             </div>
         </div>
 
-        <!-- [화면 2] 상세 페이지 -->
         <div id="product-detail-page" class="hidden detail-view">
             <button onclick="goHome()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 뒤로가기</button>
             <div style="text-align: center;">
@@ -452,12 +426,10 @@
             </div>
             <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
             
-            <!-- 색상 선택 -->
             <div class="form-group" id="color-selection-group">
                 <label>색상 선택</label>
                 <div id="color-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <!-- JS로 동적 생성 -->
-                </div>
+                    </div>
             </div>
             
             <div class="form-group">
@@ -481,7 +453,6 @@
             <button class="btn btn-secondary" onclick="buyNow()">바로 구매하기</button>
         </div>
 
-        <!-- [화면 3] 주문서 작성 -->
         <div id="order-form-page" class="hidden order-view">
             <button onclick="showCart()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 뒤로가기</button>
             <h2>주문서 작성</h2>
@@ -491,7 +462,7 @@
                 <hr>
                 <p style="text-align: right;">결제 금액: <span id="summary-total" style="font-weight:bold; color:var(--primary-color)"></span></p>
             </div>
-            <div class="bank-info">국민은행 123-456-789012 (베룽코)</div>
+            <div class="bank-info">카카오뱅크 3333-03-1084442 (베룽코)</div>
             <form id="order-form">
                 <div class="form-group"><label>주문자 이름</label><input type="text" id="user-name" required placeholder="홍길동"></div>
                 <div class="form-group"><label>연락처</label><input type="tel" id="user-phone" required placeholder="010-1234-5678"></div>
@@ -501,23 +472,19 @@
             </form>
         </div>
 
-        <!-- [화면 4] 장바구니 -->
         <div id="cart-page" class="hidden detail-view">
             <button onclick="goHome()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 쇼핑 계속하기</button>
             <h2>🛒 장바구니</h2>
             
             <div id="cart-items-container">
-                <!-- 장바구니 아이템들이 여기에 표시됩니다 -->
-            </div>
+                </div>
 
-            <!-- 빈 장바구니 메시지 -->
             <div id="empty-cart" class="empty-cart hidden">
                 <div class="empty-cart-icon">🛒</div>
                 <p>장바구니가 비어있습니다</p>
                 <button class="btn" onclick="goHome()">쇼핑 시작하기</button>
             </div>
 
-            <!-- 장바구니 요약 및 결제 버튼 -->
             <div id="cart-summary-section" class="cart-summary hidden">
                 <div class="cart-total">
                     <span>총 <span id="cart-total-items">0</span>개 상품</span>
@@ -527,7 +494,6 @@
             </div>
         </div>
 
-        <!-- [화면 5] 주문 완료 -->
         <div id="success-page" class="hidden success-view" style="text-align: center; padding: 50px 20px;">
             <div style="font-size: 3rem;">✅</div>
             <h2>주문 성공!</h2>
@@ -535,11 +501,9 @@
             <button class="btn btn-secondary" onclick="goHome()">홈으로</button>
         </div>
 
-        <!-- [화면 5] 관리자 페이지 (확장됨) -->
         <div id="admin-page" class="hidden admin-view">
             <h2>👮‍♂️ 관리자 모드</h2>
             
-            <!-- 관리자 탭 메뉴 -->
             <div class="admin-nav">
                 <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="active">주문 관리</button>
                 <button onclick="switchAdminTab('products')" id="tab-btn-products">상품 관리</button>
@@ -547,24 +511,18 @@
                 <button onclick="switchAdminTab('settings')" id="tab-btn-settings">사이트 설정</button>
             </div>
 
-            <!-- 탭 1: 주문 목록 -->
             <div id="admin-tab-orders">
                 <h3>실시간 주문 현황</h3>
                 <div id="admin-order-list">로딩 중...</div>
             </div>
 
-            <!-- 탭 2: 상품 관리 (추가/수정/삭제) -->
             <div id="admin-tab-products" class="hidden">
                 <h3>상품 등록 및 관리</h3>
                 
-                <!-- 상품 등록/수정 폼 -->
                 <div style="background:#f9f9f9; padding:20px; border-radius:8px; margin-bottom:20px; border:1px solid #ddd;">
                     <h4 style="margin-top:0;" id="product-form-title">새 상품 등록</h4>
                     <form id="add-product-form">
-                        <input type="hidden" id="edit-prod-id"> <!-- 수정 모드일 때 ID 저장 -->
-                        
-                        <!-- 기본 정보 섹션 -->
-                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                        <input type="hidden" id="edit-prod-id"> <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
                             <h5 style="margin-top: 0; color: var(--admin-bg);">📝 기본 정보</h5>
                             
                             <div class="form-group">
@@ -607,12 +565,10 @@
                             </div>
                         </div>
                         
-                        <!-- 색상 옵션 및 재고 관리 섹션 -->
                         <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
                             <h5 style="margin-top: 0; color: var(--admin-bg);">🎨 색상별 재고 관리 (최대 5가지)</h5>
                             
                             <div id="color-stock-container">
-                                <!-- 색상별 재고 입력 영역 -->
                                 <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
                                     <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
                                         <input type="text" class="color-name-input" placeholder="색상명 (예: 블랙)" style="flex: 2;" required>
@@ -650,7 +606,6 @@
                             </div>
                         </div>
                         
-                        <!-- 이미지 정보 섹션 -->
                         <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
                             <h5 style="margin-top: 0; color: var(--admin-bg);">🖼️ 이미지 정보</h5>
                             
@@ -672,7 +627,6 @@ https://example.com/detail2.jpg"></textarea>
                             </div>
                         </div>
                         
-                        <!-- 상세 설명 섹션 -->
                         <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
                             <h5 style="margin-top: 0; color: var(--admin-bg);">📋 상세 설명</h5>
                             
@@ -692,7 +646,6 @@ https://example.com/detail2.jpg"></textarea>
                             </div>
                         </div>
                         
-                        <!-- 추가 옵션 섹션 -->
                         <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
                             <h5 style="margin-top: 0; color: var(--admin-bg);">⚙️ 추가 옵션</h5>
                             
@@ -724,14 +677,11 @@ https://example.com/detail2.jpg"></textarea>
                     </form>
                 </div>
 
-                <!-- 상품 목록 (삭제/수정용) -->
                 <h4>등록된 상품 목록</h4>
                 <div id="admin-product-list">
-                    <!-- JS로 채워짐 -->
-                </div>
+                    </div>
             </div>
 
-            <!-- 탭 3: 매출 통계 (주문 요약) -->
             <div id="admin-tab-stats" class="hidden">
                 <h3>📊 전체 매출 현황</h3>
                 <div class="stats-container">
@@ -745,7 +695,6 @@ https://example.com/detail2.jpg"></textarea>
                     </div>
                 </div>
 
-                <!-- 추가 통계: 배송 현황 -->
                 <h4>배송 처리 현황</h4>
                 <div class="stats-container" style="margin-bottom:20px;">
                     <div class="stat-card" style="background-color:#fff3e0;">
@@ -760,11 +709,9 @@ https://example.com/detail2.jpg"></textarea>
                 
                 <h4>상품별 판매량</h4>
                 <ul id="stat-product-breakdown" style="list-style: none; padding: 0;">
-                    <!-- JS로 채워짐 -->
-                </ul>
+                    </ul>
             </div>
 
-            <!-- 탭 4: 사이트 설정 -->
             <div id="admin-tab-settings" class="hidden">
                 <h3>⚙️ 사이트 설정</h3>
                 
@@ -809,7 +756,6 @@ https://example.com/detail2.jpg"></textarea>
         </div>
     </footer>
 
-    <!-- Firebase SDK 및 전역 변수 선언 -->
     <script>
         // [수정1] 전역 변수들을 스크립트 최상단에 선언
         const defaultProducts = [
@@ -934,9 +880,13 @@ https://example.com/detail2.jpg"></textarea>
             switchView('product-detail-page'); 
         }
         
+        // [수정됨] 관리자 모드 비밀번호 추가
         function goToAdmin() { 
-            if(confirm("관리자 모드로 진입하시겠습니까?")) {
+            const password = prompt("🔐 관리자 비밀번호를 입력하세요:");
+            if (password === "1230") {
                 switchView('admin-page');
+            } else if (password !== null) {
+                alert("비밀번호가 틀렸습니다!");
             }
         }
 
@@ -1130,898 +1080,3 @@ https://example.com/detail2.jpg"></textarea>
             
             if (price > 0 && discount > 0) {
                 const salePrice = Math.round(price * (100 - discount) / 100);
-                document.getElementById('new-prod-sale-price').value = salePrice;
-                
-                // 미리보기 표시
-                document.getElementById('preview-original-price').textContent = price.toLocaleString() + '원';
-                document.getElementById('preview-sale-price').textContent = salePrice.toLocaleString() + '원';
-                document.getElementById('preview-discount-badge').textContent = discount + '%';
-                document.getElementById('discount-preview').style.display = 'block';
-            } else {
-                document.getElementById('new-prod-sale-price').value = '';
-                document.getElementById('discount-preview').style.display = 'none';
-            }
-        }
-        
-        function calculateDiscount() {
-            const price = parseInt(document.getElementById('new-prod-price').value) || 0;
-            const salePrice = parseInt(document.getElementById('new-prod-sale-price').value) || 0;
-            
-            if (price > 0 && salePrice > 0 && salePrice < price) {
-                const discount = Math.round((1 - salePrice / price) * 100);
-                document.getElementById('new-prod-discount').value = discount;
-                calculateSalePrice();
-            }
-        }
-
-        // ===== 색상별 재고 관리 함수 =====
-        
-        function addColorStock() {
-            const container = document.getElementById('color-stock-container');
-            const colorItems = container.querySelectorAll('.color-stock-item');
-            
-            if (colorItems.length >= 5) {
-                alert('색상은 최대 5개까지만 추가할 수 있습니다.');
-                return;
-            }
-            
-            const newItem = document.createElement('div');
-            newItem.className = 'color-stock-item';
-            newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
-            newItem.innerHTML = `
-                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                    <input type="text" class="color-name-input" placeholder="색상명 (예: 화이트)" style="flex: 2;" required>
-                    <input type="color" class="color-picker-input" value="#ffffff" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
-                    <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
-                    <div>
-                        <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
-                        <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
-                        <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
-                        <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                    </div>
-                </div>
-                <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
-                    <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
-                </div>
-            `;
-            container.appendChild(newItem);
-            updateAllStocks();
-        }
-        
-        function removeColorStock(btn) {
-            const container = document.getElementById('color-stock-container');
-            const colorItems = container.querySelectorAll('.color-stock-item');
-            
-            if (colorItems.length <= 1) {
-                alert('최소 1개의 색상은 필요합니다.');
-                return;
-            }
-            
-            btn.closest('.color-stock-item').remove();
-            updateAllStocks();
-        }
-        
-        // ===== 재고 총합 계산 (색상별 + 전체) =====
-        
-        function updateAllStocks() {
-            const colorItems = document.querySelectorAll('.color-stock-item');
-            let grandTotal = 0;
-            
-            colorItems.forEach(item => {
-                const stockS = parseInt(item.querySelector('.stock-s-input').value) || 0;
-                const stockM = parseInt(item.querySelector('.stock-m-input').value) || 0;
-                const stockL = parseInt(item.querySelector('.stock-l-input').value) || 0;
-                const colorTotal = stockS + stockM + stockL;
-                
-                // 각 색상의 총 재고 업데이트
-                const colorTotalDisplay = item.querySelector('.color-total-stock');
-                if (colorTotalDisplay) {
-                    colorTotalDisplay.textContent = colorTotal;
-                }
-                
-                grandTotal += colorTotal;
-            });
-            
-            // 전체 총 재고 업데이트
-            const grandTotalDisplay = document.getElementById('grand-total-stock');
-            if (grandTotalDisplay) {
-                grandTotalDisplay.textContent = grandTotal;
-            }
-        }
-        
-        // 페이지 로드 시 초기 재고 계산
-        document.addEventListener('DOMContentLoaded', function() {
-            updateAllStocks();
-        });
-
-        // ===== 기존 함수들 =====
-
-        function switchAdminTab(tabName) {
-            ['orders', 'products', 'stats', 'settings'].forEach(t => {
-                document.getElementById(`tab-btn-${t}`).classList.remove('active');
-                document.getElementById(`admin-tab-${t}`).classList.add('hidden');
-            });
-            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
-            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
-        }
-
-        function editProduct(id) {
-            const p = products.find(prod => prod.id === id);
-            if (!p) return;
-
-            document.getElementById('product-form-title').innerText = "상품 수정 모드";
-            document.getElementById('edit-prod-id').value = id;
-            
-            // 기본 정보
-            document.getElementById('new-prod-name').value = p.name || '';
-            document.getElementById('new-prod-price').value = p.price || '';
-            document.getElementById('new-prod-discount').value = p.discount || 0;
-            document.getElementById('new-prod-sale-price').value = p.salePrice || '';
-            document.getElementById('new-prod-category').value = p.category || 'running';
-            
-            // 할인 미리보기 표시
-            if (p.discount > 0) {
-                calculateSalePrice();
-            }
-            
-            // 색상별 재고 로드
-            const colorContainer = document.getElementById('color-stock-container');
-            colorContainer.innerHTML = ''; // 기존 색상 옵션 모두 삭제
-            
-            if (p.colorStocks && p.colorStocks.length > 0) {
-                p.colorStocks.forEach(colorStock => {
-                    const newItem = document.createElement('div');
-                    newItem.className = 'color-stock-item';
-                    newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
-                    newItem.innerHTML = `
-                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                            <input type="text" class="color-name-input" placeholder="색상명" value="${colorStock.name}" style="flex: 2;" required>
-                            <input type="color" class="color-picker-input" value="${colorStock.code}" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
-                            <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
-                            <div>
-                                <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
-                                <input type="number" class="stock-s-input" placeholder="재고" value="${colorStock.stock.S}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
-                                <input type="number" class="stock-m-input" placeholder="재고" value="${colorStock.stock.M}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
-                                <input type="number" class="stock-l-input" placeholder="재고" value="${colorStock.stock.L}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                            </div>
-                        </div>
-                        <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
-                            <strong>이 색상 총 재고:</strong> <span class="color-total-stock">${colorStock.total}</span>개
-                        </div>
-                    `;
-                    colorContainer.appendChild(newItem);
-                });
-            } else {
-                // 기본 색상 재고 1개 추가
-                addColorStock();
-            }
-            
-            updateAllStocks();
-            
-            // 이미지 정보
-            document.getElementById('new-prod-img').value = p.img || '';
-            document.getElementById('new-prod-detail-imgs').value = p.detailImgs ? p.detailImgs.join('\n') : '';
-            
-            // 상세 설명
-            document.getElementById('new-prod-summary').value = p.summary || '';
-            document.getElementById('new-prod-description').value = p.description || '';
-            
-            // 추가 옵션
-            document.getElementById('new-prod-bestseller').checked = p.isBestseller || false;
-            document.getElementById('new-prod-new').checked = p.isNew || false;
-            document.getElementById('new-prod-tags').value = p.tags ? p.tags.join(', ') : '';
-            
-            document.getElementById('btn-save-product').innerText = "💾 수정사항 저장";
-            document.getElementById('btn-cancel-edit').classList.remove('hidden');
-            
-            document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function cancelEdit() {
-            document.getElementById('product-form-title').innerText = "새 상품 등록";
-            document.getElementById('edit-prod-id').value = "";
-            document.getElementById('add-product-form').reset();
-            
-            // 색상 재고 초기화
-            const colorContainer = document.getElementById('color-stock-container');
-            colorContainer.innerHTML = `
-                <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                        <input type="text" class="color-name-input" placeholder="색상명 (예: 블랙)" style="flex: 2;" required>
-                        <input type="color" class="color-picker-input" value="#000000" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
-                        <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
-                        <div>
-                            <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
-                            <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
-                            <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
-                            <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
-                        </div>
-                    </div>
-                    <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
-                        <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
-                    </div>
-                </div>
-            `;
-            
-            updateAllStocks();
-            
-            document.getElementById('btn-save-product').innerText = "✅ 상품 추가하기";
-            document.getElementById('btn-cancel-edit').classList.add('hidden');
-        }
-    </script>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 1. Firebase 초기화
-        // [실제 배포시] 아래 설정값을 사용합니다
-        const firebaseConfig = {
-            apiKey: "AIzaSyDHC0F79_7jnC-YwV48Tiusg0NMHdtPhj4",
-            authDomain: "berunko-5c8bf.firebaseapp.com",
-            projectId: "berunko-5c8bf",
-            storageBucket: "berunko-5c8bf.firebasestorage.app",
-            messagingSenderId: "933523639470",
-            appId: "1:933523639470:web:33967d8bc13e284a80f13f"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-
-        // 2. 인증 및 리스너 시작
-        async function initAuth() {
-            const statusText = document.getElementById('status-text');
-            try { 
-                if (statusText) statusText.textContent = '인증 중...';
-                await signInAnonymously(auth); 
-                console.log("Firebase 익명 인증 성공");
-            } 
-            catch (e) { 
-                console.error("인증 실패:", e);
-                if (statusText) {
-                    statusText.textContent = '인증 실패';
-                    statusText.style.color = '#e74c3c';
-                }
-                alert("Firebase 연결에 실패했습니다. 페이지를 새로고침 해주세요.");
-            }
-        }
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                console.log("Firebase 인증 완료:", user.uid);
-                
-                // 연결 상태 표시 업데이트
-                const statusDot = document.getElementById('status-dot');
-                const statusText = document.getElementById('status-text');
-                if (statusDot && statusText) {
-                    statusDot.style.background = '#4caf50';
-                    statusText.textContent = '연결됨';
-                    statusText.style.color = '#4caf50';
-                    
-                    // 3초 후 상태 표시 숨기기
-                    setTimeout(() => {
-                        const firebaseStatus = document.getElementById('firebase-status');
-                        if (firebaseStatus) {
-                            firebaseStatus.style.opacity = '0';
-                            firebaseStatus.style.transition = 'opacity 0.5s';
-                        }
-                    }, 3000);
-                }
-                
-                setupProductListener(); 
-                setupOrderListener();
-            } else {
-                // 인증 실패
-                const statusDot = document.getElementById('status-dot');
-                const statusText = document.getElementById('status-text');
-                if (statusDot && statusText) {
-                    statusDot.style.background = '#e74c3c';
-                    statusText.textContent = '연결 실패';
-                    statusText.style.color = '#e74c3c';
-                }
-            }
-        });
-        initAuth();
-
-        // [기능 1] 상품 데이터 실시간 동기화 (CRUD: Read)
-        function setupProductListener() {
-            const listContainer = document.getElementById('product-list');
-            const adminListContainer = document.getElementById('admin-product-list');
-
-            try {
-                const productCollection = collection(db, 'products');
-                
-                onSnapshot(productCollection, (snapshot) => {
-                    if (snapshot.empty) {
-                        if (products.length === 4 && products[0].id === 'static-1') {
-                            console.log("DB 비어있음. 시딩 시작...");
-                            seedInitialProducts();
-                        }
-                        return; 
-                    }
-
-                    let tempProducts = [];
-                    snapshot.forEach(docSnap => {
-                        tempProducts.push({ id: docSnap.id, ...docSnap.data() });
-                    });
-                    
-                    tempProducts.sort((a, b) => {
-                        const timeA = a.createdAt ? a.createdAt.seconds : 0;
-                        const timeB = b.createdAt ? b.createdAt.seconds : 0;
-                        return timeB - timeA;
-                    });
-                    
-                    products = tempProducts;
-
-                    listContainer.innerHTML = "";
-                    adminListContainer.innerHTML = "";
-
-                    products.forEach(p => {
-                        // 할인율 계산
-                        const discount = p.salePrice && p.price > p.salePrice ? 
-                                        Math.round((1 - p.salePrice / p.price) * 100) : 0;
-                        const displayPrice = p.salePrice || p.price;
-                        
-                        // 1. 메인 화면 카드
-                        const card = document.createElement('div');
-                        card.className = 'product-card';
-                        card.onclick = () => showProductDetail(p.id);
-                        card.innerHTML = `
-                            <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/300?text=No+Image'">
-                            <div style="padding:10px;">
-                                <div class="product-name">${p.name}</div>
-                                <div>
-                                    ${discount > 0 ? `<span class="product-original-price">${Number(p.price).toLocaleString()}원</span>` : ''}
-                                    <span class="product-price">${Number(displayPrice).toLocaleString()}원</span>
-                                    ${discount > 0 ? `<span class="product-discount-badge">${discount}%</span>` : ''}
-                                </div>
-                            </div>
-                        `;
-                        listContainer.appendChild(card);
-
-                        // 2. 관리자 화면 리스트
-                        const adminItem = document.createElement('div');
-                        adminItem.className = 'admin-product-item';
-                        adminItem.innerHTML = `
-                            <div class="admin-product-info">
-                                <img src="${p.img}" class="admin-product-thumb">
-                                <div>
-                                    <strong>${p.name}</strong><br>
-                                    ${Number(p.price).toLocaleString()}원
-                                </div>
-                            </div>
-                            <div>
-                                <button class="btn btn-small btn-edit" onclick="editProduct('${p.id}')">수정</button>
-                                <button class="btn btn-small btn-danger" onclick="deleteProduct('${p.id}')">삭제</button>
-                            </div>
-                        `;
-                        adminListContainer.appendChild(adminItem);
-                    });
-                }, (error) => {
-                    console.error("데이터 읽기 권한/네트워크 오류:", error);
-                });
-            } catch (err) {
-                console.error("리스너 설정 중 오류:", err);
-            }
-        }
-
-        async function seedInitialProducts() {
-            const initialData = [
-                { 
-                    name: "베룽코 스피드 (초경량)", 
-                    price: 12000,
-                    discount: 0,
-                    salePrice: null,
-                    category: "running",
-                    colorStocks: [
-                        { name: "블랙", code: "#000000", stock: { S: 50, M: 100, L: 50 }, total: 200 },
-                        { name: "화이트", code: "#FFFFFF", stock: { S: 40, M: 80, L: 40 }, total: 160 },
-                        { name: "네온옐로우", code: "#FFFF00", stock: { S: 30, M: 60, L: 30 }, total: 120 }
-                    ],
-                    totalStock: 480,
-                    img: "https://placehold.co/300x300/orange/white?text=Speed",
-                    detailImgs: [],
-                    summary: "초경량 메시 소재로 통기성이 뛰어난 러닝 전용 양말",
-                    description: "- 소재: 폴리에스터 65%, 나일론 30%, 스판덱스 5%\n- 무게: 25g (1켤레 기준)\n- 특징: 초경량, 메시 통기성, 아치 서포트\n- 추천: 5km~10km 속도 훈련, 레이스",
-                    isBestseller: true,
-                    isNew: false,
-                    tags: ["경량", "메시", "통기성", "속도훈련"]
-                },
-                { 
-                    name: "베룽코 마라톤 프로", 
-                    price: 15000,
-                    discount: 0,
-                    salePrice: null,
-                    category: "running",
-                    colorStocks: [
-                        { name: "네이비", code: "#000080", stock: { S: 40, M: 80, L: 40 }, total: 160 },
-                        { name: "그레이", code: "#808080", stock: { S: 35, M: 70, L: 35 }, total: 140 }
-                    ],
-                    totalStock: 300,
-                    img: "https://placehold.co/300x300/navy/white?text=Marathon",
-                    detailImgs: [],
-                    summary: "장거리 마라톤을 위한 프로급 쿠셔닝 양말",
-                    description: "- 소재: 메리노울 40%, 나일론 55%, 스판덱스 5%\n- 특징: 발바닥 쿠셔닝, 발목 보호, 습기 조절\n- 추천: 하프/풀 마라톤, 장거리 러닝",
-                    isBestseller: true,
-                    isNew: false,
-                    tags: ["마라톤", "쿠셔닝", "장거리", "메리노울"]
-                },
-                { 
-                    name: "베룽코 리커버리", 
-                    price: 18000,
-                    discount: 17,
-                    salePrice: 14940,
-                    category: "recovery",
-                    colorStocks: [
-                        { name: "민트", code: "#98FF98", stock: { S: 30, M: 60, L: 30 }, total: 120 },
-                        { name: "라벤더", code: "#E6E6FA", stock: { S: 25, M: 50, L: 25 }, total: 100 }
-                    ],
-                    totalStock: 220,
-                    img: "https://placehold.co/300x300/green/white?text=Recovery",
-                    detailImgs: [],
-                    summary: "운동 후 회복을 돕는 컴프레션 양말",
-                    description: "- 소재: 나일론 70%, 스판덱스 30%\n- 압박력: 15-20mmHg\n- 특징: 혈액순환 촉진, 피로 회복, 부종 완화\n- 추천: 운동 후 착용, 장시간 이동",
-                    isBestseller: false,
-                    isNew: true,
-                    tags: ["회복", "컴프레션", "압박", "혈액순환"]
-                },
-                { 
-                    name: "베룽코 트레일", 
-                    price: 14000,
-                    discount: 0,
-                    salePrice: null,
-                    category: "trail",
-                    colorStocks: [
-                        { name: "올리브", code: "#808000", stock: { S: 25, M: 50, L: 25 }, total: 100 },
-                        { name: "브라운", code: "#8B4513", stock: { S: 20, M: 40, L: 20 }, total: 80 },
-                        { name: "블랙", code: "#000000", stock: { S: 20, M: 40, L: 20 }, total: 80 }
-                    ],
-                    totalStock: 260,
-                    img: "https://placehold.co/300x300/brown/white?text=Trail",
-                    detailImgs: [],
-                    summary: "험난한 트레일을 위한 내구성 강화 양말",
-                    description: "- 소재: 울 30%, 나일론 65%, 스판덱스 5%\n- 특징: 강화된 발끝/뒤꿈치, 방수 처리, 미끄럼 방지\n- 추천: 트레일 러닝, 등산, 아웃도어",
-                    isBestseller: false,
-                    isNew: false,
-                    tags: ["트레일", "등산", "내구성", "방수"]
-                }
-            ];
-            const promises = initialData.map(p => 
-                addDoc(collection(db, 'products'), {
-                    ...p, createdAt: serverTimestamp()
-                })
-            );
-            await Promise.all(promises);
-            console.log("초기 상품 데이터 생성 완료");
-        }
-
-        // [기능 2] 주문 데이터 리스너 & 통계 집계
-        function setupOrderListener() {
-            const orderCollection = collection(db, 'orders');
-
-            onSnapshot(orderCollection, (snapshot) => {
-                const listContainer = document.getElementById('admin-order-list');
-                
-                allOrders = [];
-                let html = "";
-
-                if (snapshot.empty) {
-                    listContainer.innerHTML = "<div class='status-msg'>주문 내역이 없습니다.</div>";
-                    return;
-                }
-
-                snapshot.forEach((docSnap) => {
-                    allOrders.push({ id: docSnap.id, ...docSnap.data() });
-                });
-
-                allOrders.sort((a, b) => {
-                    const timeA = a.orderDate ? a.orderDate.seconds : 0;
-                    const timeB = b.orderDate ? b.orderDate.seconds : 0;
-                    return timeB - timeA;
-                });
-
-                allOrders.forEach((data) => {
-                    const date = data.orderDate ? new Date(data.orderDate.seconds * 1000).toLocaleString() : "방금 전";
-                    const statusClass = data.status === '배송완료' ? 'status-completed' : 'status-pending';
-                    
-                    html += `
-                        <div class="order-item">
-                            <div class="order-header">
-                                <span>${date}</span>
-                                <span class="status-badge ${statusClass}">${data.status}</span>
-                            </div>
-                            <div><strong>[${data.productName}]</strong> ${data.qty}개 (${Number(data.totalPrice).toLocaleString()}원)</div>
-                            <div style="font-size:0.8rem; color:#666; margin-top:5px;">
-                                ${data.userName} / ${data.userAddress}
-                            </div>
-                            ${data.status !== '배송완료' ? 
-                                `<button class="btn btn-small" style="margin-top:5px;" onclick="updateOrderStatus('${data.id}')">배송처리</button>` : ''}
-                        </div>
-                    `;
-                });
-                listContainer.innerHTML = html;
-                calculateStats();
-            }, (error) => {
-                console.error("주문 데이터 로딩 실패:", error);
-                document.getElementById('admin-order-list').innerHTML = `<div class="status-msg error-msg">주문 목록 로딩 실패<br>${error.message}</div>`;
-            });
-        }
-
-        // [기능 3] 통계 계산 (주문 요약)
-        function calculateStats() {
-            let totalRevenue = 0;
-            let productCounts = {};
-            let pendingCount = 0;
-            let completedCount = 0;
-
-            allOrders.forEach(order => {
-                totalRevenue += (order.totalPrice || 0);
-                
-                if (order.status === '배송완료') completedCount++;
-                else pendingCount++;
-
-                const pName = order.productName || "알수없음";
-                if (!productCounts[pName]) productCounts[pName] = 0;
-                productCounts[pName] += (order.qty || 0);
-            });
-
-            document.getElementById('stat-total-revenue').innerText = totalRevenue.toLocaleString() + "원";
-            document.getElementById('stat-total-count').innerText = allOrders.length + "건";
-            document.getElementById('stat-pending-count').innerText = pendingCount + "건";
-            document.getElementById('stat-completed-count').innerText = completedCount + "건";
-
-            const breakdownList = document.getElementById('stat-product-breakdown');
-            breakdownList.innerHTML = "";
-            for (const [name, count] of Object.entries(productCounts)) {
-                const li = document.createElement('li');
-                li.style.padding = "5px 0";
-                li.style.borderBottom = "1px solid #eee";
-                li.innerHTML = `<span>${name}</span> <span style="float:right; font-weight:bold;">${count}개</span>`;
-                breakdownList.appendChild(li);
-            }
-        }
-
-        // [기능 4] 상품 추가 및 수정 처리 (CRUD: Create & Update)
-        document.getElementById('add-product-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-prod-id').value; 
-            
-            // 기본 정보
-            const name = document.getElementById('new-prod-name').value;
-            const price = Number(document.getElementById('new-prod-price').value);
-            const discount = Number(document.getElementById('new-prod-discount').value) || 0;
-            const salePrice = document.getElementById('new-prod-sale-price').value ? 
-                             Number(document.getElementById('new-prod-sale-price').value) : null;
-            const category = document.getElementById('new-prod-category').value;
-            
-            // 색상별 재고 수집
-            const colorItems = document.querySelectorAll('.color-stock-item');
-            const colorStocks = [];
-            let totalStock = 0;
-            
-            colorItems.forEach(item => {
-                const colorName = item.querySelector('.color-name-input').value.trim();
-                const colorCode = item.querySelector('.color-picker-input').value;
-                const stockS = parseInt(item.querySelector('.stock-s-input').value) || 0;
-                const stockM = parseInt(item.querySelector('.stock-m-input').value) || 0;
-                const stockL = parseInt(item.querySelector('.stock-l-input').value) || 0;
-                
-                if (colorName) {
-                    colorStocks.push({
-                        name: colorName,
-                        code: colorCode,
-                        stock: {
-                            S: stockS,
-                            M: stockM,
-                            L: stockL
-                        },
-                        total: stockS + stockM + stockL
-                    });
-                    totalStock += stockS + stockM + stockL;
-                }
-            });
-            
-            if (colorStocks.length === 0) {
-                alert('최소 1개의 색상을 입력해주세요.');
-                return;
-            }
-            
-            // 이미지 정보
-            const img = document.getElementById('new-prod-img').value;
-            const detailImgsText = document.getElementById('new-prod-detail-imgs').value;
-            const detailImgs = detailImgsText ? detailImgsText.split('\n').filter(url => url.trim()) : [];
-            
-            // 상세 설명
-            const summary = document.getElementById('new-prod-summary').value;
-            const description = document.getElementById('new-prod-description').value;
-            
-            // 추가 옵션
-            const isBestseller = document.getElementById('new-prod-bestseller').checked;
-            const isNew = document.getElementById('new-prod-new').checked;
-            const tagsText = document.getElementById('new-prod-tags').value;
-            const tags = tagsText ? tagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
-            
-            const productData = {
-                name,
-                price,
-                discount,            // 할인율
-                salePrice,
-                category,
-                colorStocks,         // 색상별 재고 배열
-                totalStock,          // 전체 총 재고
-                img,
-                detailImgs,
-                summary,
-                description,
-                isBestseller,
-                isNew,
-                tags
-            };
-
-            try {
-                if (id) {
-                    await updateDoc(doc(db, 'products', id), productData);
-                    alert("상품이 수정되었습니다!");
-                    cancelEdit(); 
-                } else {
-                    await addDoc(collection(db, 'products'), {
-                        ...productData, 
-                        createdAt: serverTimestamp()
-                    });
-                    alert("새 상품이 등록되었습니다!");
-                    e.target.reset();
-                    
-                    // 색상 재고 초기화 (첫 번째만 남기기)
-                    const container = document.getElementById('color-stock-container');
-                    const colorItems = container.querySelectorAll('.color-stock-item');
-                    for (let i = 1; i < colorItems.length; i++) {
-                        colorItems[i].remove();
-                    }
-                    
-                    // 첫 번째 색상 재고 초기화
-                    if (colorItems[0]) {
-                        colorItems[0].querySelector('.color-name-input').value = '';
-                        colorItems[0].querySelector('.color-picker-input').value = '#000000';
-                        colorItems[0].querySelector('.stock-s-input').value = 50;
-                        colorItems[0].querySelector('.stock-m-input').value = 100;
-                        colorItems[0].querySelector('.stock-l-input').value = 50;
-                    }
-                    
-                    updateAllStocks();
-                }
-            } catch (err) {
-                console.error(err);
-                alert("처리 실패: " + err.message);
-            }
-        });
-
-        // [기능 5] 상품 삭제 (CRUD: Delete)
-        window.deleteProduct = async (id) => {
-            if(!confirm("정말 이 상품을 삭제하시겠습니까?")) return;
-            try {
-                await deleteDoc(doc(db, 'products', id));
-            } catch(err) {
-                console.error(err);
-                alert("삭제 실패: " + err.message);
-            }
-        };
-
-        // [기능 6] 주문 제출
-        document.getElementById('order-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (cart.length === 0) {
-                alert("장바구니가 비어있습니다.");
-                return;
-            }
-            
-            const btn = document.getElementById('btn-order-submit');
-            btn.disabled = true; 
-            btn.innerText = "처리 중...";
-
-            // Firebase 인증 대기 (최대 5초)
-            let waitCount = 0;
-            while (!currentUser && waitCount < 50) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                waitCount++;
-            }
-
-            if (!currentUser) {
-                alert("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
-                btn.disabled = false;
-                btn.innerText = "주문 완료하기";
-                return;
-            }
-
-            const userName = document.getElementById('user-name').value;
-            const userPhone = document.getElementById('user-phone').value;
-            const userAddress = document.getElementById('user-address').value;
-            const depositName = document.getElementById('deposit-name').value;
-
-            try {
-                // 장바구니의 각 상품을 개별 주문으로 등록
-                const orderPromises = cart.map(item => {
-                    const orderData = {
-                        productName: item.name,
-                        option: item.option,
-                        qty: item.qty,
-                        totalPrice: item.price * item.qty,
-                        userName: userName,
-                        userPhone: userPhone,
-                        userAddress: userAddress,
-                        depositName: depositName,
-                        orderDate: serverTimestamp(),
-                        status: "입금대기"
-                    };
-                    return addDoc(collection(db, 'orders'), orderData);
-                });
-
-                await Promise.all(orderPromises);
-                
-                // 총 결제 금액 계산
-                const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-                document.getElementById('final-price').innerText = totalAmount.toLocaleString();
-                
-                // 장바구니 비우기
-                cart = [];
-                updateCartUI();
-                
-                switchView('success-page');
-                e.target.reset();
-            } catch(err) { 
-                console.error("주문 오류:", err);
-                alert("주문 실패: " + err.message); 
-            }
-            finally { 
-                btn.disabled = false; 
-                btn.innerText = "주문 완료하기"; 
-            }
-        });
-
-        // [기능 7] 주문 배송 처리
-        window.updateOrderStatus = async (docId) => {
-            if(!confirm("배송 완료 처리하시겠습니까?")) return;
-            await updateDoc(doc(db, 'orders', docId), { status: "배송완료" });
-        };
-
-        // [기능 8] 사이트 설정 저장 및 로드
-        async function loadSiteSettings() {
-            try {
-                const settingsDoc = await onSnapshot(doc(db, 'settings', 'site'), (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        const headerText = data.headerText || '기록 단축을 위한 최고의 선택';
-                        
-                        // 메인 페이지 헤더 업데이트
-                        const mainHeader = document.getElementById('main-header-text');
-                        if (mainHeader) mainHeader.textContent = headerText;
-                        
-                        // 관리자 설정 폼 업데이트
-                        const settingsInput = document.getElementById('site-header-text');
-                        if (settingsInput) settingsInput.value = headerText;
-                        
-                        // 미리보기 업데이트
-                        const preview = document.getElementById('header-preview');
-                        if (preview) preview.textContent = headerText;
-                        
-                        // 마지막 업데이트 시간
-                        const lastUpdated = document.getElementById('last-updated');
-                        if (lastUpdated && data.updatedAt) {
-                            lastUpdated.textContent = new Date(data.updatedAt.seconds * 1000).toLocaleString();
-                        }
-                    }
-                });
-            } catch (err) {
-                console.error("설정 로드 실패:", err);
-            }
-        }
-
-        // 헤더 문구 미리보기 실시간 업데이트
-        document.addEventListener('DOMContentLoaded', function() {
-            const headerInput = document.getElementById('site-header-text');
-            const headerPreview = document.getElementById('header-preview');
-            
-            if (headerInput && headerPreview) {
-                headerInput.addEventListener('input', function() {
-                    headerPreview.textContent = this.value || '기록 단축을 위한 최고의 선택';
-                });
-            }
-        });
-
-        // 사이트 설정 저장
-        document.addEventListener('DOMContentLoaded', function() {
-            const settingsForm = document.getElementById('site-settings-form');
-            if (settingsForm) {
-                settingsForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    
-                    const headerText = document.getElementById('site-header-text').value || '기록 단축을 위한 최고의 선택';
-                    
-                    try {
-                        await setDoc(doc(db, 'settings', 'site'), {
-                            headerText: headerText,
-                            updatedAt: serverTimestamp()
-                        });
-                        
-                        // 메인 페이지 즉시 업데이트
-                        const mainHeader = document.getElementById('main-header-text');
-                        if (mainHeader) mainHeader.textContent = headerText;
-                        
-                        alert('설정이 저장되었습니다!');
-                    } catch (err) {
-                        console.error("설정 저장 실패:", err);
-                        alert('설정 저장 실패: ' + err.message);
-                    }
-                });
-            }
-        });
-
-        // 인증 완료 후 사이트 설정 로드
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                console.log("Firebase 인증 완료:", user.uid);
-                
-                // 연결 상태 표시 업데이트
-                const statusDot = document.getElementById('status-dot');
-                const statusText = document.getElementById('status-text');
-                if (statusDot && statusText) {
-                    statusDot.style.background = '#4caf50';
-                    statusText.textContent = '연결됨';
-                    statusText.style.color = '#4caf50';
-                    
-                    setTimeout(() => {
-                        const firebaseStatus = document.getElementById('firebase-status');
-                        if (firebaseStatus) {
-                            firebaseStatus.style.opacity = '0';
-                            firebaseStatus.style.transition = 'opacity 0.5s';
-                        }
-                    }, 3000);
-                }
-                
-                setupProductListener(); 
-                setupOrderListener();
-                loadSiteSettings(); // 사이트 설정 로드
-            } else {
-                const statusDot = document.getElementById('status-dot');
-                const statusText = document.getElementById('status-text');
-                if (statusDot && statusText) {
-                    statusDot.style.background = '#e74c3c';
-                    statusText.textContent = '연결 실패';
-                    statusText.style.color = '#e74c3c';
-                }
-            }
-        });
-        initAuth();
-    </script>
-</body>
-</html>
