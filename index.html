@@ -377,43 +377,24 @@
     <div class="container">
         
         <div id="main-page">
-            <div style="margin-bottom: 40px; text-align: center;">
-                <img src="https://placehold.co/800x350/ff6b00/ffffff?text=VERUNCO+RUNNING&font=roboto" 
-                     style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.2);" 
-                     alt="메인 배너">
+            <div style="margin-bottom: 40px; text-align: center; position: relative; color: white;">
+                <img src="./image_92b100.jpg" 
+                     style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 15px; filter: brightness(0.65); box-shadow: 0 4px 15px rgba(0,0,0,0.2);" 
+                     alt="메인 배너"
+                     onerror="this.src='https://placehold.co/800x400/ff6b00/ffffff?text=Banner+Image+Missing'">
+                
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+                    <h2 style="margin: 0; font-size: 1.6rem; line-height: 1.5; word-break: keep-all;">
+                        SRT여러분 2025년 열심히 달리시느라 고생많으셨습니다.<br>
+                        <span style="color: #ffd700;">내년 병오년(붉은말)</span> 새해에도 부상없이 많이 많이 달리세요!
+                    </h2>
+                </div>
             </div>
 
             <h2 style="text-align:center; margin-bottom:30px;" id="main-header-text">기록 단축을 위한 최고의 선택</h2>
             
             <div id="product-list" class="product-list">
-                <div class="product-card" onclick="showProductDetail('static-1')">
-                    <img src="https://placehold.co/300x300/orange/white?text=Speed" class="product-img">
-                    <div style="padding:10px;">
-                        <div class="product-name">베룽코 스피드 (초경량)</div>
-                        <div class="product-price">12,000원</div>
-                    </div>
-                </div>
-                <div class="product-card" onclick="showProductDetail('static-2')">
-                    <img src="https://placehold.co/300x300/navy/white?text=Marathon" class="product-img">
-                    <div style="padding:10px;">
-                        <div class="product-name">베룽코 마라톤 프로</div>
-                        <div class="product-price">15,000원</div>
-                    </div>
-                </div>
-                <div class="product-card" onclick="showProductDetail('static-3')">
-                    <img src="https://placehold.co/300x300/green/white?text=Recovery" class="product-img">
-                    <div style="padding:10px;">
-                        <div class="product-name">베룽코 리커버리</div>
-                        <div class="product-price">18,000원</div>
-                    </div>
-                </div>
-                <div class="product-card" onclick="showProductDetail('static-4')">
-                    <img src="https://placehold.co/300x300/brown/white?text=Trail" class="product-img">
-                    <div style="padding:10px;">
-                        <div class="product-name">베룽코 트레일</div>
-                        <div class="product-price">14,000원</div>
-                    </div>
-                </div>
+                <div style="text-align:center; grid-column: 1/-1; padding: 40px; color: #999;">상품을 불러오는 중입니다...</div>
             </div>
         </div>
 
@@ -435,9 +416,9 @@
             <div class="form-group">
                 <label>사이즈 선택</label>
                 <select id="option-size">
-                    <option value="S">S (220-255mm)</option>
-                    <option value="M">M (260-275mm)</option>
-                    <option value="L">L (280-295mm)</option>
+                    <option value="S">S (220~245mm)</option>
+                    <option value="M">M (250~270mm)</option>
+                    <option value="L">L (275~290mm)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -462,7 +443,7 @@
                 <hr>
                 <p style="text-align: right;">결제 금액: <span id="summary-total" style="font-weight:bold; color:var(--primary-color)"></span></p>
             </div>
-            <div class="bank-info">카카오뱅크 3333-03-1084442 (김형태)</div>
+            <div class="bank-info">카카오뱅크 3333-03-1084442 (베룽코)</div>
             <form id="order-form">
                 <div class="form-group"><label>주문자 이름</label><input type="text" id="user-name" required placeholder="홍길동"></div>
                 <div class="form-group"><label>연락처</label><input type="tel" id="user-phone" required placeholder="010-1234-5678"></div>
@@ -571,21 +552,21 @@
                             <div id="color-stock-container">
                                 <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
                                     <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                        <input type="text" class="color-name-input" placeholder="색상명 (예: 블랙)" style="flex: 2;" required>
+                                        <input type="text" class="color-name-input" placeholder="색상명 (예: 화이트)" style="flex: 2;" required>
                                         <input type="color" class="color-picker-input" value="#000000" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
                                         <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
                                     </div>
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
                                         <div>
-                                            <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                                            <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
                                             <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                                         </div>
                                         <div>
-                                            <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                                            <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
                                             <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                                         </div>
                                         <div>
-                                            <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                                            <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
                                             <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                                         </div>
                                     </div>
@@ -877,7 +858,7 @@ https://example.com/detail2.jpg"></textarea>
             window.switchView('product-detail-page'); 
         };
         
-        // [수정됨] 관리자 모드 비밀번호 추가
+        // [유지됨] 관리자 모드 비밀번호 추가
         window.goToAdmin = function() { 
             const password = prompt("🔐 관리자 비밀번호를 입력하세요:");
             if (password === "1230") {
@@ -1106,6 +1087,7 @@ https://example.com/detail2.jpg"></textarea>
             const newItem = document.createElement('div');
             newItem.className = 'color-stock-item';
             newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
+            // [수정됨] 관리자 페이지에서도 사이즈 표기 변경
             newItem.innerHTML = `
                 <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
                     <input type="text" class="color-name-input" placeholder="색상명 (예: 화이트)" style="flex: 2;" required>
@@ -1114,15 +1096,15 @@ https://example.com/detail2.jpg"></textarea>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
                     <div>
-                        <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                        <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
                         <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                     </div>
                     <div>
-                        <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                        <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
                         <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                     </div>
                     <div>
-                        <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                        <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
                         <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                     </div>
                 </div>
@@ -1209,6 +1191,7 @@ https://example.com/detail2.jpg"></textarea>
                     const newItem = document.createElement('div');
                     newItem.className = 'color-stock-item';
                     newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
+                    // [수정됨] 관리자 수정 모드에서도 사이즈 표기 변경
                     newItem.innerHTML = `
                         <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
                             <input type="text" class="color-name-input" placeholder="색상명" value="${colorStock.name}" style="flex: 2;" required>
@@ -1217,15 +1200,15 @@ https://example.com/detail2.jpg"></textarea>
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
                             <div>
-                                <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                                <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
                                 <input type="number" class="stock-s-input" placeholder="재고" value="${colorStock.stock.S}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                             </div>
                             <div>
-                                <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                                <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
                                 <input type="number" class="stock-m-input" placeholder="재고" value="${colorStock.stock.M}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                             </div>
                             <div>
-                                <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                                <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
                                 <input type="number" class="stock-l-input" placeholder="재고" value="${colorStock.stock.L}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                             </div>
                         </div>
@@ -1262,6 +1245,7 @@ https://example.com/detail2.jpg"></textarea>
             document.getElementById('add-product-form').reset();
             
             const colorContainer = document.getElementById('color-stock-container');
+            // [수정됨] 초기화 시에도 사이즈 표기 변경
             colorContainer.innerHTML = `
                 <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
                     <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
@@ -1271,15 +1255,15 @@ https://example.com/detail2.jpg"></textarea>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
                         <div>
-                            <label style="font-size: 0.9rem; color: #666;">S (220-240mm)</label>
+                            <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
                             <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                         </div>
                         <div>
-                            <label style="font-size: 0.9rem; color: #666;">M (240-270mm)</label>
+                            <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
                             <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                         </div>
                         <div>
-                            <label style="font-size: 0.9rem; color: #666;">L (275-290mm)</label>
+                            <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
                             <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
                         </div>
                     </div>
@@ -1382,7 +1366,6 @@ https://example.com/detail2.jpg"></textarea>
                 
                 onSnapshot(productCollection, (snapshot) => {
                     if (snapshot.empty) {
-                        // DB가 비어있으면 초기 데이터 시딩 (이 부분은 선택 사항)
                         return; 
                     }
 
@@ -1453,7 +1436,6 @@ https://example.com/detail2.jpg"></textarea>
 
         async function seedInitialProducts() {
             // (초기 데이터 시딩 로직 - 생략 가능하지만 유지)
-            // ... (기존 시딩 코드와 동일)
         }
 
         // [기능 2] 주문 데이터 리스너
@@ -1544,7 +1526,6 @@ https://example.com/detail2.jpg"></textarea>
             e.preventDefault();
             const id = document.getElementById('edit-prod-id').value; 
             
-            // (폼 데이터 수집 부분 - 생략 없이 기존 로직 그대로 사용)
             const name = document.getElementById('new-prod-name').value;
             const price = Number(document.getElementById('new-prod-price').value);
             const discount = Number(document.getElementById('new-prod-discount').value) || 0;
@@ -1723,5 +1704,3 @@ https://example.com/detail2.jpg"></textarea>
     </script>
 </body>
 </html>
-
-
