@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>베룽코 양말 - 마라토너를 위한 선택</title>
+    <style>
+        /* [스타일 정의 구역] */
+        :root {
+            --primary-color: #ff6b00;
+            --text-color: #333;
+            --bg-color: #f5f5f5;
+            --admin-bg: #2c3e50; /* 관리자 테마색 */
+            --admin-accent: #3498db;
+        }
+
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* --- [추가됨] 인증 퀴즈 게이트 스타일 --- */
+        #gate-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 9999; /* 최상단 노출 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .gate-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%;
+            width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .gate-input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .gate-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* 공통 헤더 */
+        header {
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* 쇼핑몰 메인 */
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            min-height: 200px; /* 로딩 메시지 공간 확보 */
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            cursor: pointer;
+            text-align: center;
+            padding-bottom: 15px;
+            position: relative; /* 삭제 버튼 위치용 */
+        }
+        .product-card:hover { transform: translateY(-5px); }
+
+        .product-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        .product-name { font-weight: bold; margin: 10px 0 5px; }
+        .product-price { color: var(--primary-color); font-weight: bold; }
+        .product-original-price { 
+            text-decoration: line-through; 
+            color: #999; 
+            font-size: 0.9rem; 
+            margin-right: 5px; 
+        }
+        .product-discount-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        /* 색상 선택 버튼 */
+        .color-option-btn {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-option-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .color-option-btn.selected {
+            border-color: var(--primary-color);
+            border-width: 4px;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-color);
+        }
+        
+        .color-option-label {
+            display: block;
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: #666;
+        }
+
+        /* 버튼 및 입력 폼 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-secondary { background-color: #999; margin-top: 10px; }
+        .btn-small { width: auto; padding: 5px 10px; font-size: 0.8rem; margin: 0; }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-edit { background-color: #f39c12; color: white; margin-right: 5px;}
+
+        /* 일반 뷰 스타일 */
+        .detail-view, .order-view, .success-view {
+            background: white; padding: 20px; border-radius: 10px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;
+        }
+        .detail-img { width: 100%; max-width: 300px; display: block; margin: 0 auto 20px; border-radius: 10px; }
+        .price-summary { background-color: #fff8f0; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #ffe0b2; }
+        .bank-info { background-color: #e8f4fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #0056b3; font-weight: bold; text-align: center; }
+
+        /* --- [관리자 전용 스타일] --- */
+        .admin-view {
+            background-color: white; padding: 20px; border-radius: 10px; border: 2px solid var(--admin-bg);
+        }
+        .admin-nav {
+            display: flex; gap: 10px; margin-bottom: 20px;
+        }
+        .admin-nav button {
+            flex: 1; padding: 10px; border: none; background: #eee; cursor: pointer; border-radius: 5px;
+            font-weight: bold;
+        }
+        .admin-nav button.active {
+            background: var(--admin-bg); color: white;
+        }
+
+        /* 통계 대시보드 */
+        .stats-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #ddd;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--admin-bg); margin: 5px 0; }
+        .stat-label { font-size: 0.9rem; color: #666; }
+
+        /* 상품 관리 테이블 */
+        .admin-product-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px; border-bottom: 1px solid #eee;
+        }
+        .admin-product-info { display: flex; align-items: center; gap: 10px; }
+        .admin-product-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+
+        /* 주문 내역 스타일 */
+        .order-item { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #666; }
+        .status-badge { padding: 3px 8px; border-radius: 10px; font-size: 0.8rem; }
+        .status-pending { background: #ffe0b2; color: #e65100; }
+        .status-completed { background: #c8e6c9; color: #2e7d32; }
+
+        /* Footer 스타일 개선 */
+        footer { 
+            margin-top: 50px; 
+            padding: 30px 20px;
+            background-color: #f8f8f8;
+            border-top: 1px solid #ddd;
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .admin-btn {
+            background-color: var(--admin-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            transition: background-color 0.3s;
+        }
+        
+        .admin-btn:hover {
+            background-color: #34495e;
+        }
+        
+        .copyright {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+        
+        /* 로딩/에러 메시지 스타일 */
+        .status-msg { text-align: center; width: 100%; padding: 20px; color: #666; }
+        .error-msg { color: #e74c3c; font-weight: bold; }
+
+        /* 장바구니 관련 스타일 */
+        .cart-floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        .cart-floating-btn:hover {
+            transform: scale(1.1);
+        }
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .cart-item-info {
+            flex: 1;
+        }
+        .cart-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .cart-item-option {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .cart-item-price {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .cart-qty-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cart-qty-btn {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .cart-qty-btn:hover {
+            background: #f5f5f5;
+        }
+        .cart-remove-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+        .cart-summary {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 20px;
+            border-top: 2px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .cart-total-amount {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-cart-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gate-overlay">
+        <div class="gate-box">
+            <h2 style="margin-top:0; color:var(--primary-color);">🔒 SRT 정회원 인증</h2>
+            <p style="margin-bottom:20px; color:#555;">
+                <strong>퀴즈:</strong> SRT 7기 부회장님 이름을 적어주세요!
+            </p>
+            <input type="text" id="gate-answer" class="gate-input" placeholder="이름을 입력하세요" onkeyup="if(window.event.keyCode==13){checkGate()}">
+            <button class="gate-btn" onclick="checkGate()">입장하기</button>
+        </div>
+    </div>
+
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto;">
+            <h1 onclick="goHome()" style="margin: 0; cursor: pointer;">🧦 베룽코 양말</h1>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="firebase-status" style="font-size: 0.8rem; color: #999;" title="Firebase 연결 상태">
+                    <span id="status-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ffa500; margin-right: 5px;"></span>
+                    <span id="status-text">연결중...</span>
+                </div>
+                <div onclick="showCart()" style="position: relative; cursor: pointer; font-size: 1.8rem;">
+                    🛒
+                    <span id="cart-badge" class="cart-badge hidden">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div id="main-page">
+            <div style="margin-bottom: 40px; text-align: center; position: relative; color: white;">
+                <img src="./image_92b100.jpg" 
+                     style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 15px; filter: brightness(0.65); box-shadow: 0 4px 15px rgba(0,0,0,0.2);" 
+                     alt="메인 배너"
+                     onerror="this.src='https://placehold.co/800x400/ff6b00/ffffff?text=Banner+Image+Missing'">
+                
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+                    <h2 style="margin: 0; font-size: 1.6rem; line-height: 1.5; word-break: keep-all;">
+                        SRT여러분 2025년 열심히 달리시느라 고생많으셨습니다.<br>
+                        <span style="color: #ffd700;">내년 병오년(붉은말)</span> 새해에도 부상없이 많이 많이 달리세요!
+                    </h2>
+                </div>
+            </div>
+
+            <h2 style="text-align:center; margin-bottom:30px;" id="main-header-text">기록 단축을 위한 최고의 선택</h2>
+            
+            <div id="product-list" class="product-list">
+                <div style="text-align:center; grid-column: 1/-1; padding: 40px; color: #999;">상품을 불러오는 중입니다...</div>
+            </div>
+        </div>
+
+        <div id="product-detail-page" class="hidden detail-view">
+            <button onclick="goHome()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 뒤로가기</button>
+            <div style="text-align: center;">
+                <img id="detail-img" class="detail-img" src="" alt="상품이미지">
+                <h2 id="detail-name">상품명</h2>
+                <h3 id="detail-price" style="color:var(--primary-color)">0원</h3>
+            </div>
+            <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+            
+            <div class="form-group" id="color-selection-group">
+                <label>색상 선택</label>
+                <div id="color-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    </div>
+            </div>
+            
+            <div class="form-group">
+                <label>사이즈 선택</label>
+                <select id="option-size">
+                    <option value="S">S (220~245mm)</option>
+                    <option value="M">M (250~270mm)</option>
+                    <option value="L">L (275~290mm)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>수량</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button type="button" onclick="changeQty(-1)" style="padding: 5px 15px;">-</button>
+                    <input type="number" id="order-qty" value="1" readonly style="width: 50px; text-align: center;">
+                    <button type="button" onclick="changeQty(1)" style="padding: 5px 15px;">+</button>
+                </div>
+            </div>
+            <div class="price-summary">총 결제 금액 <span id="total-price-display" class="total-price">0원</span></div>
+            <button class="btn" onclick="addToCart()">🛒 장바구니에 담기</button>
+            <button class="btn btn-secondary" onclick="buyNow()">바로 구매하기</button>
+        </div>
+
+        <div id="order-form-page" class="hidden order-view">
+            <button onclick="showCart()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 뒤로가기</button>
+            <h2>주문서 작성</h2>
+            <div class="price-summary">
+                <div id="summary-product-name"></div>
+                <div id="summary-option-legacy" style="display:none;"><strong>옵션:</strong> <span id="summary-option"></span> / <span id="summary-qty"></span>개</div>
+                <hr>
+                <p style="text-align: right;">결제 금액: <span id="summary-total" style="font-weight:bold; color:var(--primary-color)"></span></p>
+            </div>
+            <div class="bank-info">카카오뱅크 3333-03-1084442 (베룽코)</div>
+            <form id="order-form">
+                <div class="form-group"><label>주문자 이름</label><input type="text" id="user-name" required placeholder="홍길동"></div>
+                <div class="form-group"><label>연락처</label><input type="tel" id="user-phone" required placeholder="010-1234-5678"></div>
+                <div class="form-group"><label>배송 주소</label><input type="text" id="user-address" required placeholder="서울시 ..."></div>
+                <div class="form-group"><label>입금자명</label><input type="text" id="deposit-name" required placeholder="필수 입력"></div>
+                <button type="submit" class="btn" id="btn-order-submit">주문 완료하기</button>
+            </form>
+        </div>
+
+        <div id="cart-page" class="hidden detail-view">
+            <button onclick="goHome()" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">← 쇼핑 계속하기</button>
+            <h2>🛒 장바구니</h2>
+            
+            <div id="cart-items-container">
+                </div>
+
+            <div id="empty-cart" class="empty-cart hidden">
+                <div class="empty-cart-icon">🛒</div>
+                <p>장바구니가 비어있습니다</p>
+                <button class="btn" onclick="goHome()">쇼핑 시작하기</button>
+            </div>
+
+            <div id="cart-summary-section" class="cart-summary hidden">
+                <div class="cart-total">
+                    <span>총 <span id="cart-total-items">0</span>개 상품</span>
+                    <span class="cart-total-amount" id="cart-total-price">0원</span>
+                </div>
+                <button class="btn" onclick="proceedToCheckout()">주문하기</button>
+            </div>
+        </div>
+
+        <div id="success-page" class="hidden success-view" style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3rem;">✅</div>
+            <h2>주문 성공!</h2>
+            <p><strong><span id="final-price"></span>원</strong>을 입금해 주세요.</p>
+            <button class="btn btn-secondary" onclick="goHome()">홈으로</button>
+        </div>
+
+        <div id="admin-page" class="hidden admin-view">
+            <h2>👮‍♂️ 관리자 모드</h2>
+            
+            <div class="admin-nav">
+                <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="active">주문 관리</button>
+                <button onclick="switchAdminTab('products')" id="tab-btn-products">상품 관리</button>
+                <button onclick="switchAdminTab('stats')" id="tab-btn-stats">매출 통계</button>
+                <button onclick="switchAdminTab('settings')" id="tab-btn-settings">사이트 설정</button>
+            </div>
+
+            <div id="admin-tab-orders">
+                <h3>실시간 주문 현황</h3>
+                <div id="admin-order-list">로딩 중...</div>
+            </div>
+
+            <div id="admin-tab-products" class="hidden">
+                <h3>상품 등록 및 관리</h3>
+                
+                <div style="background:#f9f9f9; padding:20px; border-radius:8px; margin-bottom:20px; border:1px solid #ddd;">
+                    <h4 style="margin-top:0;" id="product-form-title">새 상품 등록</h4>
+                    <form id="add-product-form">
+                        <input type="hidden" id="edit-prod-id"> <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">📝 기본 정보</h5>
+                            
+                            <div class="form-group">
+                                <label>상품명 *</label>
+                                <input type="text" id="new-prod-name" placeholder="예: 베룽코 울트라 삭스" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>상품 카테고리</label>
+                                <select id="new-prod-category">
+                                    <option value="running">러닝용</option>
+                                    <option value="trail">트레일용</option>
+                                    <option value="recovery">리커버리용</option>
+                                    <option value="daily">일상용</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                <div class="form-group">
+                                    <label>정가 (원) *</label>
+                                    <input type="number" id="new-prod-price" placeholder="15000" required onchange="calculateDiscount()">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>할인율 (%)</label>
+                                    <input type="number" id="new-prod-discount" placeholder="0" min="0" max="100" value="0" onchange="calculateSalePrice()">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>할인가 (원)</label>
+                                    <input type="number" id="new-prod-sale-price" placeholder="자동계산" readonly style="background: #f5f5f5;">
+                                </div>
+                            </div>
+                            
+                            <div id="discount-preview" style="display: none; padding: 10px; background: #fff3e0; border-radius: 5px; margin-top: 10px; border-left: 3px solid #ff6b00;">
+                                <strong>할인 미리보기:</strong><br>
+                                <span style="text-decoration: line-through; color: #999;" id="preview-original-price">15,000원</span>
+                                <span style="margin-left: 10px; color: var(--primary-color); font-weight: bold; font-size: 1.2rem;" id="preview-sale-price">12,000원</span>
+                                <span style="margin-left: 5px; background: #e74c3c; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.9rem;" id="preview-discount-badge">20%</span>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">🎨 색상별 재고 관리 (최대 5가지)</h5>
+                            
+                            <div id="color-stock-container">
+                                <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
+                                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                        <input type="text" class="color-name-input" placeholder="색상명 (예: 화이트)" style="flex: 2;" required>
+                                        <input type="color" class="color-picker-input" value="#000000" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                                        <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                                        <div>
+                                            <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
+                                            <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
+                                            <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
+                                            <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                                        <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-small btn-secondary" onclick="addColorStock()" style="width: auto; margin-bottom: 10px;">+ 색상 추가</button>
+                            <small style="color:#888; display: block; margin-bottom: 10px;">* 최소 1개, 최대 5개까지 추가 가능</small>
+                            
+                            <div style="padding: 15px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff6b00; margin-top: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="font-size: 1.1rem;">전체 총 재고:</strong>
+                                    <span id="grand-total-stock" style="font-size: 1.3rem; font-weight: bold; color: var(--primary-color);">200</span>개
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">🖼️ 이미지 정보</h5>
+                            
+                            <div class="form-group">
+                                <label>메인 이미지 URL *</label>
+                                <input type="text" id="new-prod-img" placeholder="https://placehold.co/300x300/orange/white?text=Product" required>
+                                <small style="color:#888;">
+                                    * 무료 이미지: <a href="https://placehold.co" target="_blank">placehold.co</a>, 
+                                    <a href="https://unsplash.com" target="_blank">unsplash.com</a>
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>상세 이미지 URL (선택)</label>
+                                <textarea id="new-prod-detail-imgs" rows="3" placeholder="이미지 URL을 줄바꿈으로 구분하여 입력
+https://example.com/detail1.jpg
+https://example.com/detail2.jpg"></textarea>
+                                <small style="color:#888;">* 상세 페이지에 추가로 표시될 이미지들</small>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">📋 상세 설명</h5>
+                            
+                            <div class="form-group">
+                                <label>한줄 소개</label>
+                                <input type="text" id="new-prod-summary" placeholder="예: 초경량 메시 소재로 통기성이 뛰어난 러닝 양말">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>상세 설명</label>
+                                <textarea id="new-prod-description" rows="5" placeholder="상품의 특징, 소재, 사용 용도 등을 자세히 입력하세요.
+
+예:
+- 소재: 폴리에스터 70%, 나일론 25%, 스판덱스 5%
+- 특징: 메시 구조로 통기성 우수, 아치 서포트, 발목 쿠션
+- 추천: 5km 이상 장거리 러닝, 마라톤 훈련"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <h5 style="margin-top: 0; color: var(--admin-bg);">⚙️ 추가 옵션</h5>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="new-prod-bestseller"> 
+                                    베스트셀러 표시
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="new-prod-new"> 
+                                    신상품 표시
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>제품 태그 (쉼표로 구분)</label>
+                                <input type="text" id="new-prod-tags" placeholder="예: 경량, 메시, 통기성, 여름용">
+                                <small style="color:#888;">* 검색 및 필터링에 사용됩니다</small>
+                            </div>
+                        </div>
+                        
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" class="btn btn-small" id="btn-save-product" style="flex: 1;">✅ 상품 추가하기</button>
+                            <button type="button" class="btn btn-small btn-secondary hidden" id="btn-cancel-edit" onclick="cancelEdit()" style="flex: 1;">취소</button>
+                        </div>
+                    </form>
+                </div>
+
+                <h4>등록된 상품 목록</h4>
+                <div id="admin-product-list">
+                    </div>
+            </div>
+
+            <div id="admin-tab-stats" class="hidden">
+                <h3>📊 전체 매출 현황</h3>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-label">총 매출액</div>
+                        <div class="stat-value" id="stat-total-revenue">0원</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">총 주문 건수</div>
+                        <div class="stat-value" id="stat-total-count">0건</div>
+                    </div>
+                </div>
+
+                <h4>배송 처리 현황</h4>
+                <div class="stats-container" style="margin-bottom:20px;">
+                    <div class="stat-card" style="background-color:#fff3e0;">
+                        <div class="stat-label">배송 대기</div>
+                        <div class="stat-value" id="stat-pending-count" style="color:#e65100">0건</div>
+                    </div>
+                    <div class="stat-card" style="background-color:#e8f5e9;">
+                        <div class="stat-label">배송 완료</div>
+                        <div class="stat-value" id="stat-completed-count" style="color:#2e7d32">0건</div>
+                    </div>
+                </div>
+                
+                <h4>상품별 판매량</h4>
+                <ul id="stat-product-breakdown" style="list-style: none; padding: 0;">
+                    </ul>
+            </div>
+
+            <div id="admin-tab-settings" class="hidden">
+                <h3>⚙️ 사이트 설정</h3>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">메인 페이지 헤더 문구</h4>
+                    <form id="site-settings-form">
+                        <div class="form-group">
+                            <label>메인 헤더 문구</label>
+                            <input type="text" id="site-header-text" placeholder="예: 기록 단축을 위한 최고의 선택" style="font-size: 1.1rem;">
+                            <small style="color:#888;">* 메인 페이지 상단에 표시되는 캐치프레이즈입니다</small>
+                        </div>
+                        
+                        <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; margin: 15px 0; border-left: 3px solid #3498db;">
+                            <strong>미리보기:</strong><br>
+                            <div style="text-align: center; margin-top: 10px; font-size: 1.2rem; font-weight: bold;" id="header-preview">
+                                기록 단축을 위한 최고의 선택
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-small" style="width: auto;">💾 설정 저장</button>
+                    </form>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px;">
+                    <h4 style="margin-top: 0;">현재 설정 정보</h4>
+                    <div style="padding: 10px; background: #fafafa; border-radius: 5px;">
+                        <p><strong>사이트명:</strong> 베룽코 양말</p>
+                        <p><strong>마지막 업데이트:</strong> <span id="last-updated">-</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="goHome()" style="margin-top:20px;">쇼핑몰로 돌아가기</button>
+        </div>
+
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <button class="admin-btn" onclick="goToAdmin()">🔐 관리자 모드</button>
+            <div class="copyright">© 2024 Verunco Socks Corp.</div>
+        </div>
+    </footer>
+
+    <script>
+        // [수정1] 전역 변수들을 스크립트 최상단에 선언
+        const defaultProducts = [
+            { id: 'static-1', name: "베룽코 스피드 (초경량)", price: 12000, img: "https://placehold.co/300x300/orange/white?text=Speed" },
+            { id: 'static-2', name: "베룽코 마라톤 프로", price: 15000, img: "https://placehold.co/300x300/navy/white?text=Marathon" },
+            { id: 'static-3', name: "베룽코 리커버리", price: 18000, img: "https://placehold.co/300x300/green/white?text=Recovery" },
+            { id: 'static-4', name: "베룽코 트레일", price: 14000, img: "https://placehold.co/300x300/brown/white?text=Trail" }
+        ];
+
+        window.products = [...defaultProducts]; // [중요] 전역 변수로 설정하여 모듈에서도 접근 가능하게 함
+        window.selectedProduct = null;
+        window.currentQty = 1;
+        window.allOrders = [];
+        window.cart = []; // 장바구니 배열
+        window.selectedColor = ''; // 선택된 색상
+
+        // [추가됨] 퀴즈 게이트 로직
+        window.checkGate = function() {
+            const answer = document.getElementById('gate-answer').value.trim();
+            if (answer === "신명순") {
+                alert("환영합니다, SRT 회원님! 🏃‍♂️");
+                document.getElementById('gate-overlay').style.display = 'none';
+                sessionStorage.setItem('srt_auth', 'true');
+            } else {
+                alert("정답이 아닙니다. 다시 시도해주세요.");
+            }
+        };
+
+        // 페이지 로드 시 인증 여부 확인
+        document.addEventListener("DOMContentLoaded", function() {
+            if (sessionStorage.getItem('srt_auth') === 'true') {
+                document.getElementById('gate-overlay').style.display = 'none';
+            }
+        });
+
+        // [수정2] 핵심 UI 함수들을 즉시 전역으로 정의 (window에 직접 할당)
+        window.switchView = function(viewId) {
+            ['main-page', 'product-detail-page', 'cart-page', 'order-form-page', 'success-page', 'admin-page'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        };
+
+        window.goHome = function() { 
+            window.selectedProduct = null; 
+            window.switchView('main-page'); 
+        };
+        
+        window.showProductDetail = function(id) {
+            console.log('showProductDetail 호출:', id, 'products:', window.products);
+            window.selectedProduct = window.products.find(p => p.id === id);
+            if(!window.selectedProduct) {
+                console.error('상품을 찾을 수 없습니다:', id);
+                return;
+            }
+            window.currentQty = 1;
+            
+            // 할인율 계산
+            const p = window.selectedProduct;
+            const discount = p.salePrice && p.price > p.salePrice ? 
+                            Math.round((1 - p.salePrice / p.price) * 100) : 0;
+            const displayPrice = p.salePrice || p.price;
+            
+            document.getElementById('detail-img').src = p.img;
+            document.getElementById('detail-name').innerText = p.name;
+            
+            // 가격 표시 (할인 정보 포함)
+            const priceHTML = discount > 0 ? 
+                `<span class="product-original-price" style="font-size: 1rem;">${Number(p.price).toLocaleString()}원</span><br>
+                 <span class="product-price" style="font-size: 1.8rem;">${Number(displayPrice).toLocaleString()}원</span>
+                 <span class="product-discount-badge" style="font-size: 1rem; padding: 4px 10px;">${discount}%</span>` :
+                `<span class="product-price" style="font-size: 1.8rem;">${Number(displayPrice).toLocaleString()}원</span>`;
+            
+            document.getElementById('detail-price').innerHTML = priceHTML;
+            
+            // 색상 옵션 렌더링
+            const colorContainer = document.getElementById('color-options');
+            if (colorContainer) {
+                colorContainer.innerHTML = '';
+                
+                if (p.colorStocks && p.colorStocks.length > 0) {
+                    p.colorStocks.forEach((colorStock, index) => {
+                        const colorBtn = document.createElement('div');
+                        colorBtn.style.textAlign = 'center';
+                        colorBtn.innerHTML = `
+                            <button 
+                                class="color-option-btn ${index === 0 ? 'selected' : ''}" 
+                                style="background-color: ${colorStock.code};"
+                                onclick="selectColor('${colorStock.name}', this)"
+                                data-color="${colorStock.name}">
+                            </button>
+                            <span class="color-option-label">${colorStock.name}</span>
+                        `;
+                        colorContainer.appendChild(colorBtn);
+                    });
+                    window.selectedColor = p.colorStocks[0].name;
+                } else {
+                    colorContainer.innerHTML = '<p style="color: #999; font-size: 0.9rem;">색상 옵션 없음</p>';
+                    window.selectedColor = '';
+                }
+            }
+            
+            document.getElementById('order-qty').value = window.currentQty;
+            window.updateTotalPrice();
+            window.switchView('product-detail-page');
+        };
+
+
+        window.selectColor = function(colorName, btnElement) {
+            window.selectedColor = colorName;
+            document.querySelectorAll('.color-option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            btnElement.classList.add('selected');
+        };
+
+        window.changeQty = function(change) {
+            window.currentQty += change;
+            if (window.currentQty < 1) window.currentQty = 1;
+            document.getElementById('order-qty').value = window.currentQty;
+            window.updateTotalPrice();
+        };
+
+        window.updateTotalPrice = function() {
+            if (!window.selectedProduct) return;
+            const displayPrice = window.selectedProduct.salePrice || window.selectedProduct.price;
+            const total = displayPrice * window.currentQty;
+            document.getElementById('total-price-display').innerText = total.toLocaleString() + "원";
+        };
+
+        window.goToOrderForm = function() {
+            // (사용 안함 - 장바구니 거쳐서 이동)
+            window.switchView('order-form-page');
+        };
+
+        window.goBackToDetail = function() { 
+            window.switchView('product-detail-page'); 
+        };
+        
+        // [유지됨] 관리자 모드 비밀번호 추가
+        window.goToAdmin = function() { 
+            const password = prompt("🔐 관리자 비밀번호를 입력하세요:");
+            if (password === "1230") {
+                window.switchView('admin-page');
+            } else if (password !== null) {
+                alert("비밀번호가 틀렸습니다!");
+            }
+        };
+
+        // ===== 장바구니 기능 =====
+        
+        window.updateCartUI = function() {
+            const badge = document.getElementById('cart-badge');
+            const totalItems = window.cart.reduce((sum, item) => sum + item.qty, 0);
+            
+            if (totalItems > 0) {
+                badge.textContent = totalItems;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+            
+            // localStorage에 저장
+            localStorage.setItem('berunko_cart', JSON.stringify(window.cart));
+        };
+
+        window.addToCart = function() {
+            if (!window.selectedProduct) return;
+            
+            const size = document.getElementById('option-size').value;
+            const qty = window.currentQty;
+            const displayPrice = window.selectedProduct.salePrice || window.selectedProduct.price;
+            const color = window.selectedColor || '색상 미선택';
+            
+            // 같은 상품, 같은 색상, 같은 사이즈가 있는지 확인
+            const existingIndex = window.cart.findIndex(item => 
+                item.id === window.selectedProduct.id && item.option === size && item.color === color
+            );
+            
+            if (existingIndex >= 0) {
+                // 이미 있으면 수량만 증가
+                window.cart[existingIndex].qty += qty;
+                alert('장바구니에 수량이 추가되었습니다!');
+            } else {
+                // 새 아이템 추가
+                window.cart.push({
+                    id: window.selectedProduct.id,
+                    name: window.selectedProduct.name,
+                    price: displayPrice,  // 할인가 적용
+                    img: window.selectedProduct.img,
+                    color: color,
+                    option: size,
+                    qty: qty
+                });
+                alert('장바구니에 담겼습니다!');
+            }
+            
+            window.updateCartUI();
+        };
+
+        window.buyNow = function() {
+            if (!window.selectedProduct) return;
+            const size = document.getElementById('option-size').value;
+            const qty = window.currentQty;
+            const displayPrice = window.selectedProduct.salePrice || window.selectedProduct.price;
+            const color = window.selectedColor || '색상 미선택';
+            
+            // 임시 장바구니로 설정
+            window.cart = [{
+                id: window.selectedProduct.id,
+                name: window.selectedProduct.name,
+                price: displayPrice,  // 할인가 적용
+                img: window.selectedProduct.img,
+                color: color,
+                option: size,
+                qty: qty
+            }];
+            
+            window.proceedToCheckout();
+        };
+
+        window.showCart = function() {
+            const container = document.getElementById('cart-items-container');
+            const emptyCart = document.getElementById('empty-cart');
+            const summarySection = document.getElementById('cart-summary-section');
+            
+            if (window.cart.length === 0) {
+                container.innerHTML = '';
+                emptyCart.classList.remove('hidden');
+                summarySection.classList.add('hidden');
+            } else {
+                emptyCart.classList.add('hidden');
+                summarySection.classList.remove('hidden');
+                
+                // 장바구니 아이템 렌더링
+                container.innerHTML = window.cart.map((item, index) => `
+                    <div class="cart-item">
+                        <img src="${item.img}" class="cart-item-img" onerror="this.src='https://placehold.co/80?text=No+Image'">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            ${item.color ? `<div class="cart-item-option">색상: ${item.color}</div>` : ''}
+                            <div class="cart-item-option">사이즈: ${item.option}</div>
+                            <div class="cart-item-price">${(item.price * item.qty).toLocaleString()}원</div>
+                        </div>
+                        <div class="cart-qty-control">
+                            <button class="cart-qty-btn" onclick="updateCartQty(${index}, -1)">-</button>
+                            <span style="min-width: 30px; text-align: center;">${item.qty}</span>
+                            <button class="cart-qty-btn" onclick="updateCartQty(${index}, 1)">+</button>
+                        </div>
+                        <button class="cart-remove-btn" onclick="removeFromCart(${index})" title="삭제">🗑️</button>
+                    </div>
+                `).join('');
+                
+                // 총 금액 계산
+                const totalItems = window.cart.reduce((sum, item) => sum + item.qty, 0);
+                const totalPrice = window.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                
+                document.getElementById('cart-total-items').textContent = totalItems;
+                document.getElementById('cart-total-price').textContent = totalPrice.toLocaleString() + '원';
+            }
+            
+            window.switchView('cart-page');
+        };
+
+        window.updateCartQty = function(index, change) {
+            window.cart[index].qty += change;
+            
+            if (window.cart[index].qty <= 0) {
+                if (confirm('이 상품을 장바구니에서 제거하시겠습니까?')) {
+                    window.cart.splice(index, 1);
+                } else {
+                    window.cart[index].qty = 1;
+                }
+            }
+            
+            window.updateCartUI();
+            window.showCart(); // 화면 갱신
+        };
+
+        window.removeFromCart = function(index) {
+            if (confirm('이 상품을 장바구니에서 제거하시겠습니까?')) {
+                window.cart.splice(index, 1);
+                window.updateCartUI();
+                window.showCart(); // 화면 갱신
+            }
+        };
+
+        window.proceedToCheckout = function() {
+            if (window.cart.length === 0) {
+                alert('장바구니가 비어있습니다.');
+                return;
+            }
+            
+            // 주문 요약 정보 표시
+            const summaryHtml = window.cart.map(item => 
+                `<p><strong>${item.name}</strong> (${item.option}) x ${item.qty}개 = ${(item.price * item.qty).toLocaleString()}원</p>`
+            ).join('');
+            
+            const totalPrice = window.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            document.getElementById('summary-product-name').innerHTML = summaryHtml;
+            document.getElementById('summary-option').innerHTML = ''; 
+            document.getElementById('summary-qty').innerHTML = ''; 
+            document.getElementById('summary-total').textContent = totalPrice.toLocaleString() + '원';
+            
+            window.switchView('order-form-page');
+        };
+
+        window.loadCartFromStorage = function() {
+            const saved = localStorage.getItem('berunko_cart');
+            if (saved) {
+                try {
+                    window.cart = JSON.parse(saved);
+                    window.updateCartUI();
+                } catch (e) {
+                    console.error('장바구니 로드 실패:', e);
+                    window.cart = [];
+                }
+            }
+        };
+
+        window.loadCartFromStorage();
+
+        // ===== 할인가 자동 계산 함수 =====
+        
+        window.calculateSalePrice = function() {
+            const price = parseInt(document.getElementById('new-prod-price').value) || 0;
+            const discount = parseInt(document.getElementById('new-prod-discount').value) || 0;
+            
+            if (price > 0 && discount > 0) {
+                const salePrice = Math.round(price * (100 - discount) / 100);
+                document.getElementById('new-prod-sale-price').value = salePrice;
+                
+                document.getElementById('preview-original-price').textContent = price.toLocaleString() + '원';
+                document.getElementById('preview-sale-price').textContent = salePrice.toLocaleString() + '원';
+                document.getElementById('preview-discount-badge').textContent = discount + '%';
+                document.getElementById('discount-preview').style.display = 'block';
+            } else {
+                document.getElementById('new-prod-sale-price').value = '';
+                document.getElementById('discount-preview').style.display = 'none';
+            }
+        };
+        
+        window.calculateDiscount = function() {
+            const price = parseInt(document.getElementById('new-prod-price').value) || 0;
+            const salePrice = parseInt(document.getElementById('new-prod-sale-price').value) || 0;
+            
+            if (price > 0 && salePrice > 0 && salePrice < price) {
+                const discount = Math.round((1 - salePrice / price) * 100);
+                document.getElementById('new-prod-discount').value = discount;
+                window.calculateSalePrice();
+            }
+        };
+
+        // ===== 색상별 재고 관리 함수 =====
+        
+        window.addColorStock = function() {
+            const container = document.getElementById('color-stock-container');
+            const colorItems = container.querySelectorAll('.color-stock-item');
+            
+            if (colorItems.length >= 5) {
+                alert('색상은 최대 5개까지만 추가할 수 있습니다.');
+                return;
+            }
+            
+            const newItem = document.createElement('div');
+            newItem.className = 'color-stock-item';
+            newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
+            // [수정됨] 관리자 페이지에서도 사이즈 표기 변경
+            newItem.innerHTML = `
+                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <input type="text" class="color-name-input" placeholder="색상명 (예: 화이트)" style="flex: 2;" required>
+                    <input type="color" class="color-picker-input" value="#ffffff" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                    <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                    <div>
+                        <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
+                        <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
+                        <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
+                        <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                    <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
+                </div>
+            `;
+            container.appendChild(newItem);
+            window.updateAllStocks();
+        };
+        
+        window.removeColorStock = function(btn) {
+            const container = document.getElementById('color-stock-container');
+            const colorItems = container.querySelectorAll('.color-stock-item');
+            
+            if (colorItems.length <= 1) {
+                alert('최소 1개의 색상은 필요합니다.');
+                return;
+            }
+            
+            btn.closest('.color-stock-item').remove();
+            window.updateAllStocks();
+        };
+        
+        window.updateAllStocks = function() {
+            const colorItems = document.querySelectorAll('.color-stock-item');
+            let grandTotal = 0;
+            
+            colorItems.forEach(item => {
+                const stockS = parseInt(item.querySelector('.stock-s-input').value) || 0;
+                const stockM = parseInt(item.querySelector('.stock-m-input').value) || 0;
+                const stockL = parseInt(item.querySelector('.stock-l-input').value) || 0;
+                const colorTotal = stockS + stockM + stockL;
+                
+                const colorTotalDisplay = item.querySelector('.color-total-stock');
+                if (colorTotalDisplay) {
+                    colorTotalDisplay.textContent = colorTotal;
+                }
+                
+                grandTotal += colorTotal;
+            });
+            
+            const grandTotalDisplay = document.getElementById('grand-total-stock');
+            if (grandTotalDisplay) {
+                grandTotalDisplay.textContent = grandTotal;
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            window.updateAllStocks();
+        });
+
+        window.switchAdminTab = function(tabName) {
+            ['orders', 'products', 'stats', 'settings'].forEach(t => {
+                document.getElementById(`tab-btn-${t}`).classList.remove('active');
+                document.getElementById(`admin-tab-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
+        };
+
+        window.editProduct = function(id) {
+            const p = window.products.find(prod => prod.id === id);
+            if (!p) return;
+
+            document.getElementById('product-form-title').innerText = "상품 수정 모드";
+            document.getElementById('edit-prod-id').value = id;
+            
+            document.getElementById('new-prod-name').value = p.name || '';
+            document.getElementById('new-prod-price').value = p.price || '';
+            document.getElementById('new-prod-discount').value = p.discount || 0;
+            document.getElementById('new-prod-sale-price').value = p.salePrice || '';
+            document.getElementById('new-prod-category').value = p.category || 'running';
+            
+            if (p.discount > 0) {
+                window.calculateSalePrice();
+            }
+            
+            const colorContainer = document.getElementById('color-stock-container');
+            colorContainer.innerHTML = ''; 
+            
+            if (p.colorStocks && p.colorStocks.length > 0) {
+                p.colorStocks.forEach(colorStock => {
+                    const newItem = document.createElement('div');
+                    newItem.className = 'color-stock-item';
+                    newItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;';
+                    // [수정됨] 관리자 수정 모드에서도 사이즈 표기 변경
+                    newItem.innerHTML = `
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                            <input type="text" class="color-name-input" placeholder="색상명" value="${colorStock.name}" style="flex: 2;" required>
+                            <input type="color" class="color-picker-input" value="${colorStock.code}" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                            <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                            <div>
+                                <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
+                                <input type="number" class="stock-s-input" placeholder="재고" value="${colorStock.stock.S}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
+                                <input type="number" class="stock-m-input" placeholder="재고" value="${colorStock.stock.M}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
+                                <input type="number" class="stock-l-input" placeholder="재고" value="${colorStock.stock.L}" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                            <strong>이 색상 총 재고:</strong> <span class="color-total-stock">${colorStock.total}</span>개
+                        </div>
+                    `;
+                    colorContainer.appendChild(newItem);
+                });
+            } else {
+                window.addColorStock();
+            }
+            
+            window.updateAllStocks();
+            
+            document.getElementById('new-prod-img').value = p.img || '';
+            document.getElementById('new-prod-detail-imgs').value = p.detailImgs ? p.detailImgs.join('\n') : '';
+            document.getElementById('new-prod-summary').value = p.summary || '';
+            document.getElementById('new-prod-description').value = p.description || '';
+            
+            document.getElementById('new-prod-bestseller').checked = p.isBestseller || false;
+            document.getElementById('new-prod-new').checked = p.isNew || false;
+            document.getElementById('new-prod-tags').value = p.tags ? p.tags.join(', ') : '';
+            
+            document.getElementById('btn-save-product').innerText = "💾 수정사항 저장";
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            
+            document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cancelEdit = function() {
+            document.getElementById('product-form-title').innerText = "새 상품 등록";
+            document.getElementById('edit-prod-id').value = "";
+            document.getElementById('add-product-form').reset();
+            
+            const colorContainer = document.getElementById('color-stock-container');
+            // [수정됨] 초기화 시에도 사이즈 표기 변경
+            colorContainer.innerHTML = `
+                <div class="color-stock-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafafa;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <input type="text" class="color-name-input" placeholder="색상명 (예: 블랙)" style="flex: 2;" required>
+                        <input type="color" class="color-picker-input" value="#000000" style="width: 50px; height: 35px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="button" class="btn btn-small btn-danger" onclick="removeColorStock(this)" style="width: auto; margin: 0;">삭제</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">S (220~245mm)</label>
+                            <input type="number" class="stock-s-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">M (250~270mm)</label>
+                            <input type="number" class="stock-m-input" placeholder="재고" value="100" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">L (275~290mm)</label>
+                            <input type="number" class="stock-l-input" placeholder="재고" value="50" min="0" style="width: 100%; text-align: center;" onchange="updateAllStocks()">
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; text-align: center; font-size: 0.9rem;">
+                        <strong>이 색상 총 재고:</strong> <span class="color-total-stock">200</span>개
+                    </div>
+                </div>
+            `;
+            
+            window.updateAllStocks();
+            
+            document.getElementById('btn-save-product').innerText = "✅ 상품 추가하기";
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // [수정3] setDoc 추가 (설정 저장 및 상품 업데이트용)
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 1. Firebase 초기화
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHC0F79_7jnC-YwV48Tiusg0NMHdtPhj4",
+            authDomain: "berunko-5c8bf.firebaseapp.com",
+            projectId: "berunko-5c8bf",
+            storageBucket: "berunko-5c8bf.firebasestorage.app",
+            messagingSenderId: "933523639470",
+            appId: "1:933523639470:web:33967d8bc13e284a80f13f"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // 2. 인증 및 리스너 시작
+        async function initAuth() {
+            const statusText = document.getElementById('status-text');
+            try { 
+                if (statusText) statusText.textContent = '인증 중...';
+                await signInAnonymously(auth); 
+                console.log("Firebase 익명 인증 성공");
+            } 
+            catch (e) { 
+                console.error("인증 실패:", e);
+                if (statusText) {
+                    statusText.textContent = '인증 실패';
+                    statusText.style.color = '#e74c3c';
+                }
+                alert("Firebase 연결에 실패했습니다. 페이지를 새로고침 해주세요.");
+            }
+        }
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                console.log("Firebase 인증 완료:", user.uid);
+                
+                const statusDot = document.getElementById('status-dot');
+                const statusText = document.getElementById('status-text');
+                if (statusDot && statusText) {
+                    statusDot.style.background = '#4caf50';
+                    statusText.textContent = '연결됨';
+                    statusText.style.color = '#4caf50';
+                    
+                    setTimeout(() => {
+                        const firebaseStatus = document.getElementById('firebase-status');
+                        if (firebaseStatus) {
+                            firebaseStatus.style.opacity = '0';
+                            firebaseStatus.style.transition = 'opacity 0.5s';
+                        }
+                    }, 3000);
+                }
+                
+                setupProductListener(); 
+                setupOrderListener();
+                loadSiteSettings(); 
+            } else {
+                const statusDot = document.getElementById('status-dot');
+                const statusText = document.getElementById('status-text');
+                if (statusDot && statusText) {
+                    statusDot.style.background = '#e74c3c';
+                    statusText.textContent = '연결 실패';
+                    statusText.style.color = '#e74c3c';
+                }
+            }
+        });
+        initAuth();
+
+        // [기능 1] 상품 데이터 실시간 동기화
+        function setupProductListener() {
+            const listContainer = document.getElementById('product-list');
+            const adminListContainer = document.getElementById('admin-product-list');
+
+            try {
+                const productCollection = collection(db, 'products');
+                
+                onSnapshot(productCollection, (snapshot) => {
+                    if (snapshot.empty) {
+                        return; 
+                    }
+
+                    let tempProducts = [];
+                    snapshot.forEach(docSnap => {
+                        tempProducts.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    
+                    tempProducts.sort((a, b) => {
+                        const timeA = a.createdAt ? a.createdAt.seconds : 0;
+                        const timeB = b.createdAt ? b.createdAt.seconds : 0;
+                        return timeB - timeA;
+                    });
+                    
+                    // [중요] 전역 변수 업데이트
+                    window.products = tempProducts;
+
+                    listContainer.innerHTML = "";
+                    adminListContainer.innerHTML = "";
+
+                    window.products.forEach(p => {
+                        const discount = p.salePrice && p.price > p.salePrice ? 
+                                                Math.round((1 - p.salePrice / p.price) * 100) : 0;
+                        const displayPrice = p.salePrice || p.price;
+                        
+                        // 1. 메인 화면 카드
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        card.onclick = () => window.showProductDetail(p.id); // window 함수 호출
+                        card.innerHTML = `
+                            <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/300?text=No+Image'">
+                            <div style="padding:10px;">
+                                <div class="product-name">${p.name}</div>
+                                <div>
+                                    ${discount > 0 ? `<span class="product-original-price">${Number(p.price).toLocaleString()}원</span>` : ''}
+                                    <span class="product-price">${Number(displayPrice).toLocaleString()}원</span>
+                                    ${discount > 0 ? `<span class="product-discount-badge">${discount}%</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        listContainer.appendChild(card);
+
+                        // 2. 관리자 화면 리스트
+                        const adminItem = document.createElement('div');
+                        adminItem.className = 'admin-product-item';
+                        adminItem.innerHTML = `
+                            <div class="admin-product-info">
+                                <img src="${p.img}" class="admin-product-thumb">
+                                <div>
+                                    <strong>${p.name}</strong><br>
+                                    ${Number(p.price).toLocaleString()}원
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-small btn-edit" onclick="editProduct('${p.id}')">수정</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteProduct('${p.id}')">삭제</button>
+                            </div>
+                        `;
+                        adminListContainer.appendChild(adminItem);
+                    });
+                }, (error) => {
+                    console.error("데이터 읽기 권한/네트워크 오류:", error);
+                });
+            } catch (err) {
+                console.error("리스너 설정 중 오류:", err);
+            }
+        }
+
+        async function seedInitialProducts() {
+            // (초기 데이터 시딩 로직 - 생략 가능하지만 유지)
+        }
+
+        // [기능 2] 주문 데이터 리스너
+        function setupOrderListener() {
+            const orderCollection = collection(db, 'orders');
+
+            onSnapshot(orderCollection, (snapshot) => {
+                const listContainer = document.getElementById('admin-order-list');
+                window.allOrders = []; // 전역 변수 업데이트
+                let html = "";
+
+                if (snapshot.empty) {
+                    listContainer.innerHTML = "<div class='status-msg'>주문 내역이 없습니다.</div>";
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    window.allOrders.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                window.allOrders.sort((a, b) => {
+                    const timeA = a.orderDate ? a.orderDate.seconds : 0;
+                    const timeB = b.orderDate ? b.orderDate.seconds : 0;
+                    return timeB - timeA;
+                });
+
+                window.allOrders.forEach((data) => {
+                    const date = data.orderDate ? new Date(data.orderDate.seconds * 1000).toLocaleString() : "방금 전";
+                    const statusClass = data.status === '배송완료' ? 'status-completed' : 'status-pending';
+                    
+                    html += `
+                        <div class="order-item">
+                            <div class="order-header">
+                                <span>${date}</span>
+                                <span class="status-badge ${statusClass}">${data.status}</span>
+                            </div>
+                            <div><strong>[${data.productName}]</strong> ${data.qty}개 (${Number(data.totalPrice).toLocaleString()}원)</div>
+                            <div style="font-size:0.8rem; color:#666; margin-top:5px;">
+                                ${data.userName} / ${data.userAddress}
+                            </div>
+                            ${data.status !== '배송완료' ? 
+                                `<button class="btn btn-small" style="margin-top:5px;" onclick="updateOrderStatus('${data.id}')">배송처리</button>` : ''}
+                        </div>
+                    `;
+                });
+                listContainer.innerHTML = html;
+                calculateStats();
+            }, (error) => {
+                console.error("주문 데이터 로딩 실패:", error);
+                document.getElementById('admin-order-list').innerHTML = `<div class="status-msg error-msg">주문 목록 로딩 실패<br>${error.message}</div>`;
+            });
+        }
+
+        function calculateStats() {
+            let totalRevenue = 0;
+            let productCounts = {};
+            let pendingCount = 0;
+            let completedCount = 0;
+
+            window.allOrders.forEach(order => {
+                totalRevenue += (order.totalPrice || 0);
+                if (order.status === '배송완료') completedCount++;
+                else pendingCount++;
+
+                const pName = order.productName || "알수없음";
+                if (!productCounts[pName]) productCounts[pName] = 0;
+                productCounts[pName] += (order.qty || 0);
+            });
+
+            document.getElementById('stat-total-revenue').innerText = totalRevenue.toLocaleString() + "원";
+            document.getElementById('stat-total-count').innerText = window.allOrders.length + "건";
+            document.getElementById('stat-pending-count').innerText = pendingCount + "건";
+            document.getElementById('stat-completed-count').innerText = completedCount + "건";
+
+            const breakdownList = document.getElementById('stat-product-breakdown');
+            breakdownList.innerHTML = "";
+            for (const [name, count] of Object.entries(productCounts)) {
+                const li = document.createElement('li');
+                li.style.padding = "5px 0";
+                li.style.borderBottom = "1px solid #eee";
+                li.innerHTML = `<span>${name}</span> <span style="float:right; font-weight:bold;">${count}개</span>`;
+                breakdownList.appendChild(li);
+            }
+        }
+
+        // [기능 4] 상품 추가 및 수정 처리 (에러 수정됨)
+        document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-prod-id').value; 
+            
+            const name = document.getElementById('new-prod-name').value;
+            const price = Number(document.getElementById('new-prod-price').value);
+            const discount = Number(document.getElementById('new-prod-discount').value) || 0;
+            const salePrice = document.getElementById('new-prod-sale-price').value ? Number(document.getElementById('new-prod-sale-price').value) : null;
+            const category = document.getElementById('new-prod-category').value;
+            
+            // 색상별 재고 수집
+            const colorItems = document.querySelectorAll('.color-stock-item');
+            const colorStocks = [];
+            let totalStock = 0;
+            
+            colorItems.forEach(item => {
+                const colorName = item.querySelector('.color-name-input').value.trim();
+                const colorCode = item.querySelector('.color-picker-input').value;
+                const stockS = parseInt(item.querySelector('.stock-s-input').value) || 0;
+                const stockM = parseInt(item.querySelector('.stock-m-input').value) || 0;
+                const stockL = parseInt(item.querySelector('.stock-l-input').value) || 0;
+                
+                if (colorName) {
+                    colorStocks.push({
+                        name: colorName, code: colorCode,
+                        stock: { S: stockS, M: stockM, L: stockL },
+                        total: stockS + stockM + stockL
+                    });
+                    totalStock += stockS + stockM + stockL;
+                }
+            });
+            
+            if (colorStocks.length === 0) { alert('최소 1개의 색상을 입력해주세요.'); return; }
+            
+            const img = document.getElementById('new-prod-img').value;
+            const detailImgs = document.getElementById('new-prod-detail-imgs').value ? document.getElementById('new-prod-detail-imgs').value.split('\n').filter(u=>u.trim()) : [];
+            const summary = document.getElementById('new-prod-summary').value;
+            const description = document.getElementById('new-prod-description').value;
+            const isBestseller = document.getElementById('new-prod-bestseller').checked;
+            const isNew = document.getElementById('new-prod-new').checked;
+            const tags = document.getElementById('new-prod-tags').value ? document.getElementById('new-prod-tags').value.split(',').map(t=>t.trim()) : [];
+            
+            const productData = {
+                name, price, discount, salePrice, category, colorStocks, totalStock,
+                img, detailImgs, summary, description, isBestseller, isNew, tags
+            };
+
+            try {
+                if (id) {
+                    // [수정됨] updateDoc 대신 setDoc(merge: true) 사용
+                    await setDoc(doc(db, 'products', id), productData, { merge: true });
+                    alert("상품이 수정되었습니다!");
+                    window.cancelEdit(); 
+                } else {
+                    await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp() });
+                    alert("새 상품이 등록되었습니다!");
+                    e.target.reset();
+                    
+                    // 색상 입력창 초기화
+                    const container = document.getElementById('color-stock-container');
+                    const firstItem = container.querySelector('.color-stock-item');
+                    if(firstItem) {
+                        firstItem.querySelector('.color-name-input').value = '';
+                        // ... 기타 초기화
+                    }
+                    // 나머지 색상행 삭제
+                    const items = container.querySelectorAll('.color-stock-item');
+                    for(let i=1; i<items.length; i++) items[i].remove();
+                    
+                    window.updateAllStocks();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("처리 실패: " + err.message);
+            }
+        });
+
+        // [기능 5] 상품 삭제
+        window.deleteProduct = async (id) => {
+            if(!confirm("정말 이 상품을 삭제하시겠습니까?")) return;
+            try {
+                await deleteDoc(doc(db, 'products', id));
+            } catch(err) {
+                console.error(err);
+                alert("삭제 실패: " + err.message);
+            }
+        };
+
+        // [기능 6] 주문 제출
+        document.getElementById('order-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.cart.length === 0) { alert("장바구니가 비어있습니다."); return; }
+            
+            const btn = document.getElementById('btn-order-submit');
+            btn.disabled = true; btn.innerText = "처리 중...";
+
+            if (!currentUser) {
+                alert("연결 오류가 발생했습니다.");
+                btn.disabled = false; return;
+            }
+
+            const userName = document.getElementById('user-name').value;
+            const userPhone = document.getElementById('user-phone').value;
+            const userAddress = document.getElementById('user-address').value;
+            const depositName = document.getElementById('deposit-name').value;
+
+            try {
+                const orderPromises = window.cart.map(item => {
+                    const orderData = {
+                        productName: item.name, option: item.option, qty: item.qty,
+                        totalPrice: item.price * item.qty,
+                        userName, userPhone, userAddress, depositName,
+                        orderDate: serverTimestamp(), status: "입금대기"
+                    };
+                    return addDoc(collection(db, 'orders'), orderData);
+                });
+
+                await Promise.all(orderPromises);
+                
+                const totalAmount = window.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                document.getElementById('final-price').innerText = totalAmount.toLocaleString();
+                
+                window.cart = [];
+                window.updateCartUI();
+                window.switchView('success-page');
+                e.target.reset();
+            } catch(err) { 
+                console.error("주문 오류:", err); alert("주문 실패: " + err.message); 
+            }
+            finally { btn.disabled = false; btn.innerText = "주문 완료하기"; }
+        });
+
+        window.updateOrderStatus = async (docId) => {
+            if(!confirm("배송 완료 처리하시겠습니까?")) return;
+            await updateDoc(doc(db, 'orders', docId), { status: "배송완료" });
+        };
+
+        // [기능 8] 사이트 설정 로드 및 저장
+        async function loadSiteSettings() {
+            try {
+                const settingsDoc = await onSnapshot(doc(db, 'settings', 'site'), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const headerText = data.headerText || '기록 단축을 위한 최고의 선택';
+                        const mainHeader = document.getElementById('main-header-text');
+                        if (mainHeader) mainHeader.textContent = headerText;
+                        const settingsInput = document.getElementById('site-header-text');
+                        if (settingsInput) settingsInput.value = headerText;
+                    }
+                });
+            } catch (err) { console.error("설정 로드 실패:", err); }
+        }
+
+        const settingsForm = document.getElementById('site-settings-form');
+        if (settingsForm) {
+            settingsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const headerText = document.getElementById('site-header-text').value;
+                try {
+                    await setDoc(doc(db, 'settings', 'site'), {
+                        headerText: headerText,
+                        updatedAt: serverTimestamp()
+                    });
+                    alert('설정이 저장되었습니다!');
+                } catch (err) {
+                    console.error("설정 저장 실패:", err);
+                    alert('설정 저장 실패: ' + err.message);
+                }
+            });
+        }
+        
+        // 헤더 미리보기
+        const headerInput = document.getElementById('site-header-text');
+        const headerPreview = document.getElementById('header-preview');
+        if (headerInput && headerPreview) {
+            headerInput.addEventListener('input', function() {
+                headerPreview.textContent = this.value || '기록 단축을 위한 최고의 선택';
+            });
+        }
+    </script>
+</body>
+</html>
