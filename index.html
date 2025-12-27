@@ -1494,6 +1494,11 @@ https://example.com/detail2.jpg"></textarea>
             let productCounts = {};
             let pendingCount = 0;
             let completedCount = 0;
+            
+            // 주문자별 집계
+            let buyerStats = {};
+            // 제품별 옵션(색상/사이즈) 집계
+            let productOptionStats = {};
 
             window.allOrders.forEach(order => {
                 totalRevenue += (order.totalPrice || 0);
@@ -1501,8 +1506,35 @@ https://example.com/detail2.jpg"></textarea>
                 else pendingCount++;
 
                 const pName = order.productName || "알수없음";
+                const option = order.option || '옵션없음';
+                const qty = order.qty || 0;
+                const buyer = order.userName || '미등록';
+                
+                // 제품별 총수량
                 if (!productCounts[pName]) productCounts[pName] = 0;
-                productCounts[pName] += (order.qty || 0);
+                productCounts[pName] += qty;
+                
+                // 주문자별 집계
+                if (!buyerStats[buyer]) {
+                    buyerStats[buyer] = { totalQty: 0, totalPrice: 0, items: [] };
+                }
+                buyerStats[buyer].totalQty += qty;
+                buyerStats[buyer].totalPrice += (order.totalPrice || 0);
+                buyerStats[buyer].items.push({ 
+                    name: pName, 
+                    option: option, 
+                    qty: qty, 
+                    price: order.totalPrice || 0 
+                });
+                
+                // 제품별 옵션 집계
+                if (!productOptionStats[pName]) {
+                    productOptionStats[pName] = {};
+                }
+                if (!productOptionStats[pName][option]) {
+                    productOptionStats[pName][option] = 0;
+                }
+                productOptionStats[pName][option] += qty;
             });
 
             document.getElementById('stat-total-revenue').innerText = totalRevenue.toLocaleString() + "원";
@@ -1512,12 +1544,76 @@ https://example.com/detail2.jpg"></textarea>
 
             const breakdownList = document.getElementById('stat-product-breakdown');
             breakdownList.innerHTML = "";
-            for (const [name, count] of Object.entries(productCounts)) {
+            
+            // 1. 제품별 총 수량
+            const productSection = document.createElement('div');
+            productSection.innerHTML = '<h4 style="margin-top:20px; color:var(--admin-bg); border-bottom:2px solid var(--admin-bg); padding-bottom:10px;">📦 제품별 주문 수량</h4>';
+            breakdownList.appendChild(productSection);
+            
+            for (const [name, count] of Object.entries(productCounts).sort((a,b) => b[1] - a[1])) {
                 const li = document.createElement('li');
-                li.style.padding = "5px 0";
+                li.style.padding = "8px 0";
                 li.style.borderBottom = "1px solid #eee";
-                li.innerHTML = `<span>${name}</span> <span style="float:right; font-weight:bold;">${count}개</span>`;
+                li.innerHTML = `<span style="font-weight:bold;">${name}</span> <span style="float:right; color:var(--primary-color); font-weight:bold;">${count}개</span>`;
                 breakdownList.appendChild(li);
+            }
+            
+            // 2. 제품별 색상/사이즈 상세 집계
+            const optionSection = document.createElement('div');
+            optionSection.innerHTML = '<h4 style="margin-top:30px; color:var(--admin-bg); border-bottom:2px solid var(--admin-bg); padding-bottom:10px;">🎨 제품별 옵션(색상/사이즈) 상세</h4>';
+            breakdownList.appendChild(optionSection);
+            
+            for (const [productName, options] of Object.entries(productOptionStats)) {
+                const productDiv = document.createElement('div');
+                productDiv.style.marginBottom = '20px';
+                productDiv.style.padding = '15px';
+                productDiv.style.background = '#f8f9fa';
+                productDiv.style.borderRadius = '8px';
+                productDiv.style.border = '1px solid #dee2e6';
+                
+                let optionsHtml = `<div style="font-weight:bold; margin-bottom:10px; color:var(--admin-bg); font-size:1.05rem;">${productName}</div>`;
+                optionsHtml += '<table style="width:100%; border-collapse:collapse;">';
+                optionsHtml += '<tr style="background:#e9ecef;"><th style="padding:8px; text-align:left; border:1px solid #ddd;">색상/사이즈</th><th style="padding:8px; text-align:right; border:1px solid #ddd;">수량</th></tr>';
+                
+                const sortedOptions = Object.entries(options).sort((a,b) => b[1] - a[1]);
+                for (const [option, qty] of sortedOptions) {
+                    optionsHtml += `<tr><td style="padding:8px; border:1px solid #ddd;">${option}</td><td style="padding:8px; text-align:right; border:1px solid #ddd; font-weight:bold; color:var(--primary-color);">${qty}개</td></tr>`;
+                }
+                optionsHtml += '</table>';
+                productDiv.innerHTML = optionsHtml;
+                breakdownList.appendChild(productDiv);
+            }
+            
+            // 3. 주문자별 집계
+            const buyerSection = document.createElement('div');
+            buyerSection.innerHTML = '<h4 style="margin-top:30px; color:var(--admin-bg); border-bottom:2px solid var(--admin-bg); padding-bottom:10px;">👤 주문자별 상세 내역</h4>';
+            breakdownList.appendChild(buyerSection);
+            
+            const sortedBuyers = Object.entries(buyerStats).sort((a,b) => b[1].totalPrice - a[1].totalPrice);
+            for (const [buyer, stats] of sortedBuyers) {
+                const buyerDiv = document.createElement('div');
+                buyerDiv.style.marginBottom = '20px';
+                buyerDiv.style.padding = '15px';
+                buyerDiv.style.background = '#fff8f0';
+                buyerDiv.style.borderRadius = '8px';
+                buyerDiv.style.border = '2px solid #ffe0b2';
+                
+                let buyerHtml = `<div style="font-weight:bold; margin-bottom:10px; color:var(--primary-color); font-size:1.1rem;">👤 ${buyer}</div>`;
+                buyerHtml += `<div style="margin-bottom:10px; color:#666;">총 수량: <b style="color:var(--admin-bg);">${stats.totalQty}개</b> | 총 금액: <b style="color:var(--primary-color);">${stats.totalPrice.toLocaleString()}원</b></div>`;
+                buyerHtml += '<table style="width:100%; border-collapse:collapse; font-size:0.9rem;">';
+                buyerHtml += '<tr style="background:#ffe0b2;"><th style="padding:6px; text-align:left; border:1px solid #ddd;">제품명</th><th style="padding:6px; text-align:left; border:1px solid #ddd;">옵션</th><th style="padding:6px; text-align:right; border:1px solid #ddd;">수량</th><th style="padding:6px; text-align:right; border:1px solid #ddd;">금액</th></tr>';
+                
+                for (const item of stats.items) {
+                    buyerHtml += `<tr>
+                        <td style="padding:6px; border:1px solid #ddd;">${item.name}</td>
+                        <td style="padding:6px; border:1px solid #ddd;">${item.option}</td>
+                        <td style="padding:6px; text-align:right; border:1px solid #ddd; font-weight:bold;">${item.qty}개</td>
+                        <td style="padding:6px; text-align:right; border:1px solid #ddd; font-weight:bold;">${item.price.toLocaleString()}원</td>
+                    </tr>`;
+                }
+                buyerHtml += '</table>';
+                buyerDiv.innerHTML = buyerHtml;
+                breakdownList.appendChild(buyerDiv);
             }
         }
 
